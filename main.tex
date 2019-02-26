@@ -1,0 +1,473 @@
+%%% !TEX TS?program = pdflatexmk
+
+
+% This template was created by Andrew Matas on May 26, 2016
+%
+% Some useful info:
+% Dissertation abstracts must not exceed 350 words. Thesis abstracts should be limited to 150 words. There must be one overall abstract for the entire work, even if the ETD consists of separate articles. Individual abstracts can be included in addition to, but not instead of the main abstract.
+% 
+% The main file contains the header and links to the tex files containing each section. Thus one way to compile the document is to compile main.tex. Each section is in a different folder. I have added the line %!TEX root=../main.tex to the top of the tex files for each section. This line allows you to press compile within a given section file to compile the document, rather than returning to main every time you want to compile. This will compile the whole document.
+%
+% The line "%!TEX root=../main.tex" found at the top of all the subfiles allows one (in most editors) to compile the entire document from any sub document. Realize that this is a relative path to "main.tex".
+%
+%
+%
+% Some links to check the formatting requirements:
+% http://www.case.edu/med/pathology/graduateforms/formatting_your_etd.pdf
+% http://case.edu/gradstudies/current-students/electronic-theses/
+% 
+%
+%
+% The organization of the dissertation must follow the order below:
+% Title page
+% Committee Approval Sheet
+% Copyright page (only if copyrighting)
+% Dedication page (optional)
+% Table of Contents
+% List of Tables
+% List of Figures
+% Preface (optional)
+% Acknowledgements (optional)
+% List of Abbreviations (optional)
+% Glossary (optional)
+% Abstract
+% --TEXT--
+% Appendix
+% Bibliography
+
+
+\documentclass[12pt,notitlepage]{report}
+\usepackage{ mathrsfs }
+\usepackage{lipsum}
+\usepackage{float}
+\usepackage{amsmath,amsfonts,amssymb}
+\usepackage{graphicx}
+\usepackage[includefoot, top=1in, bottom=1in, left=1.5 in, right=1in]{geometry}
+\usepackage{feynmp-auto}
+\usepackage{slashed}
+\usepackage{wrapfig}
+\usepackage{cancel}
+\usepackage{listings}
+\usepackage{gensymb}
+\usepackage{times}
+\usepackage{setspace}
+\linespread{1.8}
+\usepackage{titling}
+%\usepackage{fullpage}
+%\usepackage[utf8]{inputenc}
+\usepackage[sorting=none]{biblatex}
+\bibliography{references}
+\usepackage{hyphenat}
+
+%\addbibresource{references.bib}
+% Sets up the correct margins
+% "includefoot" makes it so footer and footnotes do run into margin
+
+% Allows calls to author title date etc.
+
+% \doublespacing or \linespred{1.6} is the correct linespread format to use for
+% standard double spacing. The school seems to use \linespread{2}.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Title Page Preamble %%
+%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand*{\advisor}[1]{\gdef\theadvisor{#1}}
+\newcommand*{\graddate}[1]{\gdef\thegraddate{#1}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Committee Page Preamble %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand*{\defensedate}[1]{\gdef\thedefensedate{#1}}
+\newcommand*{\secondcmemeber}[1]{\gdef\thesecondcmemeber{#1}}
+\newcommand*{\thirdcmemeber}[1]{\gdef\thethirdcmemeber{#1}}
+\newcommand*{\externalcmember}[1]{\gdef\theexternalcmember{#1}}
+
+%%%%%%%%%%%%%%%%%%
+%% TOC Preamble %%
+%%%%%%%%%%%%%%%%%%
+
+\setcounter{secnumdepth}{3} % allows subsubsection's to be numbered
+\setcounter{tocdepth}{3} % includes subsubsections in the TOC
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Abstract Page Preamble %%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\newcommand{\mainabstract}[1]{\gdef\themainabstract{#1}}
+
+%%%%%%%%%%%%%%%%%% END OF STYLE FILE %%%%%%%%%%%%%%%%%%%%
+\usepackage{hyperref}
+\usepackage[all]{hypcap}
+% Allows hyper linking for all references (equations, sections etc.) and citations.
+
+\usepackage[toc]{glossaries}
+\makeglossaries
+% Used to make a glossary and list of abreviations.
+% Comment both lines out if not using.
+
+
+
+\newcommand{\sutwo}[4]{
+\left(
+\begin{array}{cc}
+#1 & #2 \\
+#3 & #4 \\
+\end{array}
+\right)
+}
+
+\newcommand{\fovec}[4]{
+\left(
+\begin{array}{c}
+#1\\
+#2\\
+#3\\
+#4\\
+\end{array}
+\right)
+}
+
+\newcommand{\trevec}[3]{
+\left(
+\begin{array}{c}
+#1\\
+#2\\
+#3\\
+\end{array}
+\right)
+}
+ 
+\newcommand{\spinor}[2]{
+\left(
+\begin{array}{c}
+#1\\
+#2\\
+\end{array}
+\right)
+}
+
+\newcommand{\spin}[2]{
+\left(
+\begin{array}{c}
+#1\\
+#2\\
+\end{array}
+\right)
+}
+
+\newcommand{\spind}[2]{
+\left(
+#1, #2
+\right)
+}
+%\newcounter{modelsec}[subsection]
+%\renewcommand{\themodelsec}{\Alph{modelsec}}
+%\newcommand{\modelsec}[1]{
+ % \refstepcounter{modelsec}
+ % \subsubsection*{\centering\themodelsec. #1}
+%}
+\newcommand{\begeq}[1]{
+\begin{equation}
+#1
+\end{equation}}
+
+\newcommand{\parfrac}[2]{
+\frac{\partial #1}{\partial #2}
+}
+\newcommand{\diffrac}[2]{
+\frac{d #1}{d #2}
+}
+
+%\newcommand{\feyndiag}[2]{
+%\frac{d #1}{d #2}
+%}
+
+\newcommand{\thermoderv}[2]{
+\left(\frac{\partial#1}{\partial#2}\right)
+}
+\newcommand{\constderv}[3]{
+\left(\frac{\partial #1}{\partial #2}\right)_{#3}
+}
+\newcommand{\partwo}[2]{
+\frac{\partial^2 #1}{\partial #2 ^2}
+}
+\newcommand{\begsp}[1]{
+\begin{equation}
+\begin{split}
+#1
+\end{split}
+\end{equation}}
+
+
+\newcommand{\figwrap}[6]{ %1 is caption 2 is filename 3 is width 4 is l, c or r for justification, 5 is the figure name to appear in TOC,6 is the label
+\begin{wrapfigure}{#4}{#3}
+\begin{singlespace}
+\includegraphics[width=#3]{#2}
+
+\caption[#5]{
+#1\label{#6}}
+\end{singlespace}
+\end{wrapfigure} }
+
+
+\newcommand{\figin}[4]{
+\begin{figure}[H]
+\begin{center}
+\vspace{-10pt}
+
+
+    \includegraphics[width= #3]{./#2.png}
+    \\
+
+  \caption[#4]{#1} 
+        \label{#2}
+\end{center}
+\end{figure}}
+
+\newcommand{\figindos}[5]{
+\begin{figure}[H]
+\begin{center}
+\vspace{-10pt}
+
+
+    \includegraphics[width= #3]{./#2.png}
+    \includegraphics[width= #5]{./#4.png}
+    \\
+
+  \caption{#1} 
+        \label{#2}
+\end{center}
+\end{figure}}
+
+\newcommand{\arrgeo}[2]{
+\newgeometry{#1}
+#2
+\restoregeometry
+}
+% Use whatever is common for your subfield (perhaps a journal style)
+%\bibliographystyle{JHEP} 
+
+% \includeonly{./timing/timing}
+% If you only want to include some of your chapters but want the numbering and such to be correct include them in the above
+
+\begin{document}
+\newgeometry{left=1.5in,bottom=1in,top=1in,right=1in}
+%%%%%%%%%% ORDER OF THESE COMMANDS DOES NOT MATTER %%%%%%%%%%
+
+\author{Robert Halliday} % First Last.
+\title{Electronics and Timing for the AugerPrime Upgrade and Correlation of Starburst Galaxies with Arrival Directions of Ultra High Energy Cosmic Rays } % Properly capitalized.
+\graddate{May 2019} % This is the date of graduation.
+
+\advisor{Corbin E. Covault} % First Last
+\secondcmemeber{Benjamin Monreal} % First Last
+\thirdcmemeber{John Ruhl} % First Last
+\externalcmember{David Kazdan} % First Last
+% If you need to add more members for your comittee go to the style file
+
+\defensedate{March 19, 2019} % Date of defense
+
+\mainabstract{\lipsum[1]} % Include the text of the abstract here. 
+
+%%%%%%%%%% --------------------------------------- %%%%%%%%%%
+
+
+\pagenumbering{gobble} % Prevents page numbering
+
+\include{./frontmatter/titlepage}
+
+\include{./frontmatter/committee} 
+
+\pagenumbering{roman} % Page numbering with roman numerals
+
+\tableofcontents
+\addcontentsline{toc}{chapter}{\contentsname} % Includes LOF in TOC
+
+\listoffigures
+\addcontentsline{toc}{chapter}{\listfigurename} % Includes LOF in TOC
+
+\listoftables
+\addcontentsline{toc}{chapter}{\listtablename} % Includes LOT in TOC
+% Uncomment above two lines for list of anything in a "table" environment
+
+
+% To include preface and or acknowledgements those sections might apear as:
+
+ \chapter*{}%Dedication}
+ \begin{center}
+ \textit{To my family, past, present and future.}
+ \end{center}
+ %\addcontentsline{toc}{chapter}{Preface}
+ %
+
+\chapter*{Acknowledgements}
+\addcontentsline{toc}{chapter}{Acknowledgements}
+% <Your Text>
+
+% These would both be in their own files of course and be inserted here with
+% \include{PATH_TO_PREFACE}
+% \include{PATH_TO_ACKNOWLEDGMENTS}
+
+
+\include{./frontmatter/abstract}
+
+\pagenumbering{arabic} % Page numbering with arabic numbers
+
+\include{./introduction/introduction}
+\include{./spectrumandsources/spectrumandsources}
+\include{./showersanddetectors/showersanddetectors}
+\include{./electronics/electronics}
+\include{./augertiming/augertiming}
+\include{./timing/timing}
+\include{./starburst/starburst}
+
+\chapter{Conclusion}
+\appendix
+\include{./appendix/glossary}
+%\graphystyle{plain}
+%\bibliographystyle{plain} 
+%\bibliography{references}
+
+\printbibliography
+
+%\begin{thebibliography}{9}
+%%\bibitem{pauger}
+%%L Persson (1996) Pierre Auger-A Life in the Service of Science, Acta Oncologica, 35:7, 785-787, DOI: \url{https://doi.org/10.3109/02841869609104027}
+%
+%\bibitem{pacini}
+%N Giglietto (2011) The contribution by Domenico Pacini to the Cosmic Ray Physics, DOI: 10.1016/j.nuclphysbps.2011.03.002, \url{https://arxiv.org/abs/1101.0398v1}
+%
+%\bibitem{stanev}
+%A Letessier-Selvon and T Stanev (2011) Ultra High Energy Cosmic Rays, Rev. Mod. Phys. 83, 907, DOI: \url{https://doi.org/10.1103/RevModPhys.83.907}
+%
+%\bibitem{linsley}
+%J Linsley (1963) Evidence for a Primary Cosmic-Ray Particle with Energy $10^{20}$ eV, \url{https://doi.org/10.1103/PhysRevLett.10.146}
+%
+%\bibitem{volranch}
+%J Linsley, L Scarsi (1962) Arrival Times of Air Shower Particles at Large Distances from the Axis, \url{https://doi.org/10.1103/PhysRev.128.2384}
+%
+%\bibitem{linspec}
+%J Linsley, L Scarsi (1962) Arrival Times of Air Shower Particles at Large Distances from the Axis, \url{https://doi.org/10.1103/PhysRev.128.2384}
+%
+%\bibitem{enhancements}
+%The Pierre Auger Collaboration (2011) The Pierre Auger Observatory V: Enhancements \url{https://arxiv.org/pdf/1107.4807.pdf}
+%
+%\bibitem{firstprime}
+%The Pierre Auger Collaboration (2016) The Pierre Auger Observatory Upgrade - Preliminary Design Report, \url{https://arxiv.org/pdf/1604.03637.pdf} 
+%
+%\bibitem{dirac}
+%PAM Dirac (1928) The quantum theory of the electron, Proc. R. Soc. Lond. A 1928 117 610-624, DOI: 10.1098/rspa.1928.0023, \url{http://rspa.royalsocietypublishing.org/content/117/778/610}
+%
+%\bibitem{positron}
+%CD Anderson (1933) The Positive Electron, Phys. Rev. 43, 491, DOI: \url{https://doi.org/10.1103/PhysRev.43.491}
+%
+%\bibitem{muon}
+%CD Anderson and SH Neddermeyer (1936) Cloud Chamber Observations of Cosmic Rays at 4300 Meters Elevation and Near Sea-Level, Phys. Rev. 50, 263, DOI: \url{https://doi.org/10.1103/PhysRev.50.263}
+%
+%\bibitem{firstshowers}
+%P Auger, P Ehrenfest, R Maze, J Daudin, and R. A. Fréon (1939) Extensive Cosmic-Ray Showers, Rev. Mod. Phys. 11, 288, DOI: \url{https://doi.org/10.1103/RevModPhys.11.288}
+%
+%\bibitem{scifund1}
+%AAAS (2018) Historical Trends in Federal R\&D, \url{https://www.aaas.org/programs/r-d-budget-and-policy/historical-trends-federal-rd} retrieved on Dec. 23, 2018
+%
+%\bibitem{pmthistory}
+%BK Lubsandorzhiev (2006) On the history of photomultiplier tube invention, NIM A 567 (2006) 236?238 DOI: 10.1016/j.nima.2006.05.221
+%
+%\bibitem{colliderhistory1}
+%PJ Bryant (1992) A Brief history and review of accelerators,  General accelerator physics, CERN-94-01 (94/01,rec.Mar.) Conference Proceedings in Jyvaeskylae: C92-09-07.1, p.1-16
+%
+%\bibitem{colliderhistory2}
+%G Pancheri and L Bonolis (2018) The path to high-energy electron-positron colliders: from Wider\o e's betatron to Touschek's AdA and to LEP. IOP Newsletter Jan. 2018, Retrieved Dec 23. 2018
+%
+%\bibitem {ultraray}
+%KH Kampert and AA Watson (2012) \textit{Development of Ultra High-Energy Cosmic Ray Research} in: From Ultra Rays to Astroparticles, A Historical Introduction to Astroparticle Physics. Ed. B Falkenburg and W Rhode. Springer, available through SpringerLink. DOI: \url{https://doi.org/10.1007/978-94-007-5422-5}
+%
+%\bibitem {ultraray_blau}
+%Michael Walter (2012) \textit{From the Discovery of Radioactivity to the First Accelerator Experiments} in: From Ultra Rays to Astroparticles, A Historical Introduction to Astroparticle Physics. Ed. B Falkenburg and W Rhode. Springer, available through SpringerLink. DOI: \url{https://doi.org/10.1007/978-94-007-5422-5}
+%
+%\bibitem{haverah_lillicrap}
+%SC Lillicrap et al 1963 Proc. Phys. Soc. 82 95
+%
+%\bibitem{haverah_watson} %contained in watson_cv.pdf
+%M Ave, JA Hinton, RA Vazquez, AA Watson and E Zas (2000) New Constraints from Haverah Park Data on the
+%Photon and Iron Fluxes of Ultra High Energy Cosmic Rays, Physical Review Letters, 85, 2244-2247
+%
+%\bibitem{haverah_who} %tennent
+%RM Tennent 1967 Proc. Phys. Soc. 92 622
+%
+%\bibitem{crapp}
+%TK Gaisser (1990) Comsic Rays and Particle Physics, ISBN-13: 978-0521339315
+%
+%\bibitem{kamiokande}
+%KS Hirata et al. (1988) Experimental Study Of The Atmospheric Neutrino Flux, Phys. Lett. B, Vol 205, num 2,3.
+%
+%\bibitem{agasa}
+%N Chiba et al. (1992) Akeno Giant Air Shower Array (AGASA) covering 100 km$^2$ area, NIM A 311, pg. 338-349
+%
+%\bibitem{casamia}
+%R Ong (2006) Ultra High Energy Cosmic Ray Research with CASA-MIA, Submission for Cronin Fest at University of Chicago, available at \url{http://www.astro.ucla.edu/~rene/talks/Cronin-Fest-Ong-Writeup.pdf}, retrieved Dec 27, 2018
+%
+%\bibitem{swordyplot}
+%W Hanlon (2008) The Energy Spectrum Of Ultra High Energy Cosmic Rays Measured By The High Resolution Fly's Eye Observatory In Stereoscopic Mode. PhD Thesis, University Of Utah, available at \url{http://www.physics.utah.edu/~whanlon/thesis.pdf}
+%
+%\bibitem{foteini}
+%F Oikonomou (2014) Constraining The Sources Of Ultra-High Energy Cosmic Rays With Multi-Messenger Data. PhD Thesis, University College London, available at \url{http://discovery.ucl.ac.uk/1450249/1/Oikonomou%20thesis%5B1%5D.pdf}.
+%
+%\bibitem{sean}
+%S Quinn (2017) Characterizing Arrival Direction Probabilities Of Ultra High Energy Cosmic Rays With The Pierre Auger Observatory And Progress Toward An In-Situ Cross-Calibation Of Auger and Telescope Array Surface Detector Stations, PhD Thesis, Case Western Reserve University, available through \url{https://etd.ohiolink.edu/pg_10?103494478675801::NO:10:P10_ETD_SUBID:158378}.
+%
+%%\bibitem{stanev}
+%%A Letessier-Selvon and T Stanev (2011) Ultrahigh Energy Cosmic Rays. Rev Mod Phys, Vol 83, DOI: \url{https://doi.org/10.1103/RevModPhys.83.907}.
+%
+%\bibitem{shocks}
+%M Baring (1997) Diffusive Shock Acceleration: The Fermi Mechanism. Proc. of XXXIInd Rencontres de Moriond, "Very High Energy Phenomena in the Universe," eds. Y Giraud-Heraud and J Tran Thanh Van, (Editions Frontieres, Paris), p. 97, available at \url{https://arxiv.org/abs/astro-ph/9711177}. 
+%
+%\bibitem{futuregzk}
+%KH Kampert for Auger Collab. (2016) Ultra-High Energy Cosmic Rays: Recent Results and Future Plans of Auger. Proceedings to the Carpathian Summer School Of Physics 2016, available at \url{https://arxiv.org/abs/1612.08188}.
+%
+%\bibitem{hillas}
+%AM Hillas (1984) The Origin Of Ultra-High-Energy Cosmic Rays. Ann Rev Astron Astrophys, 22: 425-44, available at \url{http://adsabs.harvard.edu/abs/1984ARA%26A..22..425H}.
+%
+%\bibitem{tds}
+%V Berezinsky (1999) Ultra High Energy Cosmic Rays. Nuc Phys B 70: 419-430, DOI: \url{https://doi.org/10.1016/S0920-5632(98)00463-0}
+%
+%\bibitem{shearedjets}
+%M Lyutikov and R Ouyed (2007) Inductive Acceleration of UHECRs in Sheared Relativistic Jets. Proceedings of the 30th ICRC, available at \url{https://arxiv.org/abs/0709.1666}. %this paper was a massive pain in the ass to find. I mean geez, they really couldnt put a link to it? it's on the arxiv!!!!
+%
+%\bibitem{radioagn}
+%AC Fabian (1999) Perspective: Active Galactic Nuclei. Proc Natl Acad Sci 96: 4749-4751, available at \url{https://www.ncbi.nlm.nih.gov/pmc/articles/PMC33567/}.
+%
+%\bibitem{waxmangrb}
+%E Waxman (2006) Gamma-Ray Bursts: Potential Sources of Ultra High Energy Cosmic-Rays. Nuc Phys B 151: 46-53, DOI: \url{https://doi.org/10.1016/j.nuclphysbps.2005.07.008}.
+%
+%\bibitem{muraseshocks}
+%K Murase, S Inoue and S Nagataki (2009) Cosmic Rays Above the Second Knee from Clusters of Galaxies and Associated High-Energy Neutrino Emission. Astrophys J 689: L105, available at \url{https://arxiv.org/abs/0805.0104}.
+%
+%\bibitem{muraseblazar}
+%K Murase, CD Dermer, H Takami, G Migliori (2012) Blazars as Ultra-High-Energy Cosmic-Ray Sources: Implications for TeV Gamma-Ray Observations. Astrophys J 749: 63, available at \url{https://arxiv.org/abs/1107.5576}.
+%
+%\bibitem{sbgshocks}
+%P Carral et al. (1994) The Interstellar Medium In The Starburst Regions of NGC 253 and NGC 3256. Astrophys J 423: 223-236, available at \url{http://adsabs.harvard.edu/full/1994ApJ...423..223C}.
+%
+%\bibitem{pulsaruhecrs}
+%K Fang, K Kotera and AV Olinto (2013) Ultrahigh Energy Cosmic Ray Nuclei from Extragalactic Pulsars and the Effect of Their Galactic Counterparts. Journal of Cosmology and Astroparticle Physics 2013, available at \url{https://arxiv.org/abs/1302.4482}.
+%
+%\bibitem{pulsarno}
+%K Fang, K Kotera, K Murase and AV Olinto (2016) Testing the Newborn Pulsar Origin of Ultrahigh Energy Cosmic Rays with EeV Neutrinos. Phys. Rev. D 92, 129901, available at \url{https://arxiv.org/abs/1311.2044}.
+%
+%\bibitem{anisotropy}
+%The Pierre Auger Collaboration (2017) Observation of a large-scale anisotropy in the arrival directions of cosmic
+%rays above 8$\times$10$^{18}$ eV. Science 357: 1266?1270, available at \url{http://science.sciencemag.org/content/357/6357/1266}.
+%
+%\bibitem{cottingham}
+%WN Cottingham and DA Greenwood (2007) An Introduction to the Standard Model of Particle Physics. Cambridge University Press, ISBN: 978-0-521-85249-4.
+%
+%\bibitem{atmos}
+%MG Aartsen et al. (2015) Measurement of the Atmospheric $\nu_e$ Spectrum with IceCube, arXiv:1504.03753, \url{https://arxiv.org/abs/1504.03753v3}
+%
+%
+%
+%\end{thebibliography}
+
+\end{document}

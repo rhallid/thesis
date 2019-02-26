@@ -1,0 +1,726 @@
+\documentclass{report}[11pt]
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{gensymb}
+\usepackage{times}
+\usepackage{setspace}
+\usepackage{fullpage}
+\usepackage{cancel}
+\usepackage{listings}
+%\usepackage{breqn}
+\usepackage{wrapfig}
+%\usepackage{feynmp}
+\usepackage{feynmp-auto}
+\usepackage{slashed}
+\usepackage{hyperref}
+\usepackage{ mathrsfs }
+
+\setcounter{tocdepth}{2}
+
+\newcommand{\sutwo}[4]{
+\left(
+\begin{array}{cc}
+#1 & #2 \\
+#3 & #4 \\
+\end{array}
+\right)
+}
+
+\newcommand{\fovec}[4]{
+\left(
+\begin{array}{c}
+#1\\
+#2\\
+#3\\
+#4\\
+\end{array}
+\right)
+}
+
+\newcommand{\trevec}[3]{
+\left(
+\begin{array}{c}
+#1\\
+#2\\
+#3\\
+\end{array}
+\right)
+}
+ 
+\newcommand{\spinor}[2]{
+\left(
+\begin{array}{c}
+#1\\
+#2\\
+\end{array}
+\right)
+}
+
+\newcommand{\spin}[2]{
+\left(
+\begin{array}{c}
+#1\\
+#2\\
+\end{array}
+\right)
+}
+
+\newcommand{\spind}[2]{
+\left(
+#1, #2
+\right)
+}
+%\newcounter{modelsec}[subsection]
+%\renewcommand{\themodelsec}{\Alph{modelsec}}
+%\newcommand{\modelsec}[1]{
+ % \refstepcounter{modelsec}
+ % \subsubsection*{\centering\themodelsec. #1}
+%}
+\newcommand{\begeq}[1]{
+\begin{equation}
+#1
+\end{equation}}
+
+\newcommand{\parfrac}[2]{
+\frac{\partial #1}{\partial #2}
+}
+\newcommand{\diffrac}[2]{
+\frac{d #1}{d #2}
+}
+
+%\newcommand{\feyndiag}[2]{
+%\frac{d #1}{d #2}
+%}
+
+\newcommand{\thermoderv}[2]{
+\left(\frac{\partial#1}{\partial#2}\right)
+}
+\newcommand{\constderv}[3]{
+\left(\frac{\partial #1}{\partial #2}\right)_{#3}
+}
+\newcommand{\partwo}[2]{
+\frac{\partial^2 #1}{\partial #2 ^2}
+}
+\newcommand{\begsp}[1]{
+\begin{equation}
+\begin{split}
+#1
+\end{split}
+\end{equation}}
+
+
+\newcommand{\figwrap}[4]{ %1 is caption 2 is filename 3 is width 4 is l, c or r for justification
+\begin{wrapfigure}{#4}{#3}
+\includegraphics[width=#3]{#2}
+
+\caption{#1\label{#2}}
+\end{wrapfigure} }
+
+
+\newcommand{\figin}[3]{
+\begin{figure}[H]
+\begin{center}
+\vspace{-10pt}
+
+
+    \includegraphics[width= #3]{./#2.png}
+    \\
+
+  \caption{#1} 
+        \label{#2}
+\end{center}
+\end{figure}}
+
+\newcommand{\figindos}[5]{
+\begin{figure}[H]
+\begin{center}
+\vspace{-10pt}
+
+
+    \includegraphics[width= #3]{./#2.png}
+    \includegraphics[width= #5]{./#4.png}
+    \\
+
+  \caption{#1} 
+        \label{#2}
+\end{center}
+\end{figure}}
+
+\renewcommand\thesection{\arabic{section}}
+\renewcommand\thesubsection{\thesection.\alph{subsection}}
+%\renewcommand{\thesubsection}{\thesection.\roman{subsection}}
+
+\title{Electronics and Timing for the AugerPrime Upgrade and Correlation of Starburst Galaxies with Arrival Directions of Ultra High Energy Cosmic Rays }
+\author{Rob Halliday}
+\date{}
+
+\numberwithin{section}{chapter}
+
+\begin{document}
+\large
+\unitlength=2pt
+\maketitle
+\doublespace
+\chapter{Introduction}
+In the development of modern physics throughout the last century, the science of cosmic rays, particles originating outside of Earth's atmosphere, have been a driving force. 
+Since their first observation by Coulomb and subsequent exploration by Domenico Pacini and separately Victor Hess, the study of particles accelerated by extraterrestrial mechanisms has been a main source of knowledge, leading to the founding of particle physics, astrophysics, and more recently particle astronomy \cite{pacini}.  Cosmic rays are known to originate from a variety of sources, in particular low and medium energy cosmic rays are believed to originate from supernovae and their remnants, while the highest energy cosmic rays are still of unknown origin \cite{stanev}. 
+% The lowest energy particles originate from the sun and interactions with solar radiation in the Earth's atmosphere. 
+
+The study of Ultra High Energy Cosmic Rays (UHECRs) originated with experiments by Pierre Auger and his colleagues to detect extensive air showers, and was solidified by the work of John Linsley and collaborators in the experiments at Volcano Ranch \cite{linsley}. The developments in the detection mechanisms and source identification that will be discussed in this document, follow along the line of experimentation propagated by Linsley, using large arrays of detectors spread over vast distances to detect extensive air showers. Throughout the latter half of the 20th century, various techniques were used to detect UHECRs including films and electronic arrays of scintillators and water tanks. These efforts culminated in the construction of the Pierre Auger Observatory. 
+
+Initially built as an array of 1600 Water Cherenkov detectors and 48 Nitrogen Fluorescence telescopes, covering 3600 km$^2$, approximately the size of the American state of Rhode Island, the Pierre Auger Observatory has been the flagship detector for particles above a kinetic energy of $10^{18}$ eV. As time progressed, the observatory integrated many efforts to improve its ability to characterize and detect extensive air showers \cite{enhancements}. After about a decade of operation, the possibility of upgrading the observatories capabilities across all detectors was explored, and now we are on the threshold of executing an array-wide improvement in the electronics and detection abilities of the apparatus \cite{firstprime}.  
+
+\section{A brief history of Comic Rays and Particle Physics}
+In the post World War One era of physics, many efforts were made to understand and utilize the advances of Quantum Mechanics and General and Special Relativity. In 1926, Erwin Schr{\"o}dinger posited his eponymous equation, describing the dynamics of wavefunctions, the fundamental description of quantum particles.  Shortly thereafter, in 1928, Paul A. M. Dirac proposed his equation which united the principles of Quantum Mechanics and Special Relativity \cite{dirac}. It is with this advance, that the importance of cosmic rays takes center stage.  
+
+Integral to the Dirac equation, is the prediction of opposite-charge equal-mass particles for each known elementary particle. At the time, knowledge of elementary particles was extremely limited and this led only to the prediction of the positron. In 1933, Carl Anderson published his paper confirming the existence of a ``positive electron" which was quickly followed, just 3 years later, by the discovery of the muon \cite{positron,muon}. In the years after this, cloud chambers with scintillator triggered cameras led to the discovery of many new particles, most of which were types of mesons.  
+
+Meanwhile, Pierre Auger and his collaborators were working to uncover particles of extremely high initial energies causing showers of lower energy particles spread over great distances \cite{firstshowers}. He and his team did this by setting up scintillation counters at increasing separations from each other and watching the rate at which coincidences were detected as a function of their separation. They tried this at multiple sites while monitoring external conditions such as barometric pressure. With this experiment, the existence of particles estimated to have energies of upwards of 10$^{16}$ eV was confirmed. While many of the advances in particle physics at this time were driven by lower energy cosmic rays, this represents the first venture towards detecting Ultra High Energy Cosmic Rays. 
+
+\figwrap{The photo published by Carl Anderson in \cite{positron} in 1932, which led to the confirmation of the positron's existence. The cosmic rays entering his cloud chamber were put under a magnetic field, hence the bending trajectory, and pictured in the center is a lead plate, meant to stop electrons.}{./images/positron.png}{2 in}{l}
+
+After the second world war, the technological and science funding situations conspired to provide a previously-unseen level of funding for experimentation (particularly into the mid and late '50s) \cite{scifund1}. Additionally, the advent of the photomultiplier tube (PMT) and the application of the first computers gave cosmic ray and particle physicists new tools \cite{pmthistory}. While versions of the photomultiplier tube existed in the 1930's, the products available in the late 40's and 50's had been refined from their predecessors. The photomultiplier tube is a device consisting of a photocathode-- a thin piece of metal off of which free electrons are generated from photons through the photoelectric effect-- multiple metal leaves and an anode to collect freed charge. A large voltage is held between the anode and the cathode such that when an electron comes off of the cathode, it is pulled towards the anode. It excites many more electrons off of the metal leaves and these electrons are similarly accelerated towards the anode by the high voltage. Through this process, a photomultiplier tube takes a photon and produces a measurable current on the order of nano or micro-amperes. 
+
+During this time, we begin to see a split between particle physics and cosmic ray physics. While particle accelerators had existed since the 20's (or earlier depending on how rigorously `particle acceleration' is defined), they were now becoming much more useful as fundamental probes of physics in ways that cosmic rays simply could not match up to \cite{colliderhistory1}. Fundamentally, the difference between studying particle physics using a collider versus using cosmic rays is in the predictability of the point and time of interaction. Cosmic rays, even today, provide access to much higher energy interactions, but they occur in-effect randomly, while interactions in a collider occur in a predetermined location and time (some like to say ``in a jar"). Due to this predictability, particle physicists need to only build one detection apparatus and guarantee the interesting portions of the collision will occur inside this apparatus. Meanwhile, cosmic ray physics at this time, especially at the highest energies, began to be engineered in a distributed way, opting for dispersed detectors in the vein of Pierre Auger's experiments in the '30s. 
+\figwrap{A diagram of Volcano Ranch in 1962 (\cite{volranch}): the dark circle represents a new detector being added for in depth shower timing studies.}{./images/volranch.png}{2 in}{r} 
+Perhaps the most notable experiment\footnote{There were many influential and noteworthy experiments that shaped the field, but here I will concentrate on an outline of experiments to show how the field of particle astrophysics advanced into the creation of the Auger Observatory.} pursuing this direction was the Volcano Ranch Experiment, led by John Linsley \cite{linsley}. Linsley greatly benefitted from the experimental agility of living in a time when a ``large'' collaboration was on the order of dozens of scientists (a trend started by Case Western's own Albert Michelson). His work at Volcano Ranch began with the setup of an array of scintillation counters, commonly referred to as scintillators (although this is a slight misnomer, see section \ref{scints}). These scintillators were placed at uniform distances apart from each other in a triangular grid. The grid spacing changed as the experiment progressed, but to give context, in 1962 it was 884m \cite{volranch}. Due to the perhaps unimpressive speed of the electronics of his day, it was still debated whether the arrival times of the signals from each scintillation detector could be used to triangulate the arrival directions of the showers, thus increasing the grid spacing gave longer differences in arrival times and therefore made timing reconstruction a more viable approach. That said, for many of the great discoveries of Volcano Ranch, the coincidence window for detection was set such that only showers of about 10\degree zenith would be recorded. 
+
+It was in this configuration that Linsley's group detected the first $10^{20}$eV comic ray. Along with a handful of other data points in this regime, Linsley was able to see the flattening of the spectrum \cite{linspec}, as will be discussed in the coming sections of this chapter. The flattening and steepening of the effective radius of curvature of cosmic ray showers in various experiments was also noted at this time, and it was correctly assumed by Linsley and others in the field that this relates to the point of first interaction in the atmosphere.
+
+As is often seen in science and technological development, great ideas are frequently had in multiple places independently around the same time. This is the case of the Air Fluorescence camera/technique. At Volcano Ranch by Linsley's group, as well as the Sydney Air Shower Array detectors called Fluorescence Telescopes (see \autoref{fluor}) were implemented. The design comes from the group of Kenneth Greissen, a prolific graduate student of prolific cosmic ray researcher Bruno Rossi, who was working on it through the mid 1960's but was somewhat unsuccessful (although his work did result in the construction of the Fly's Eye detectors) \cite{ultraray}. The fluorescence telescope is one of the inventions that led to the deep understanding of cosmic ray showers as one could now visualize how the shower develops as it goes through the atmosphere. This allowed confirmation and further study of important quantities such as $X_{max}$ and the elongation rate. 
+
+Before moving on (or back, as the case may be) to emulsion film detectors, two honorable and important mentions must be given. First, the Haverah park experiment of the University of Leeds in England, including Alan Watson, a great proponent and leader of UHECR research, became one of the top High Energy Cosmic Ray detectors around the same time as the deployment of Volcano Ranch (although it only truly came into full operation about 5 years after both experiments were commissioned). The array initially consisted of 4 water Cherenkov detectors in a semi-triangular grid (as triangular as it can be with only 4 detectors) and was triggered in much the same way as the Volcano Ranch Experiment \cite{haverah_lillicrap}. While Volcano Ranch had a much larger area than Haverah Park at the time, more advanced electronics, and upgrades over the years allowed the experiment to produce data that was still being usefully analyzed well into the 1990's \cite{haverah_watson}. In many ways, Haverah Park advanced the work of previous water Cherenkov experiments, which had problems with fungus and water purity \cite{haverah_who}. A main breakthrough from the water Cherenkov technique was a more favorable cost vs. aperture curve over scintillators (see \autoref{wcd}). 
+
+In a competing lineage to electronic detectors, emulsion film detectors were developed and deployed in the late 1930's by Marietta Blau, who deployed them high into the Alps \cite{ultraray_blau}. These films acted much like a film picture from a camera, except that they are exposed by either high energy ionizing radiation or X-rays (as in the analogous medical application). These films allowed cosmic ray researchers from the late thirties well into the eighties to see the types of tracks left by showers over long exposure times \cite{crapp}. While these measurements are not inherently calorimetric, the precision given by being able to visually see the tracks of ionizing particles allows for particle counting and shower geometry methods to attempt to determine the primary energy. These types of experiments allowed researchers to directly visualize the nature and progression of cosmic ray showers, allowing them to confirm and give insight into the results of other experiments which were better at collecting larger numbers of showers at higher energies, but were all electronically operated and could not give intuitive insight. 
+
+Looking forward from the early days of Volcano Ranch and Haverah Park, the late 1960's through the 80's opened new doors for cosmic rays physics, especially in terms of new ``messenger'' particles being looked at. In this vein, new detection techniques were provided by both the Whipple Telescope, the first Imaging Atmospheric Cherenkov Telescope (IACT) and the KamiokaNDE experiment, a proton decay experiment that accidentally became the first effective neutrino telescope. The Whipple telescope is based on a Davies-Cotton optics design from the mid 1950's which uses segmented mirrors to create a large aperture that is in turn used to collect the direct Cherenkov light from air showers caused by GeV to TeV gamma rays. This proved the viability of what are now frequently referred to as gamma ray telescopes and almost all such designs are derived from the Whipple design. These include VERITAS (at the same site as the Whipple Telescope), MAGIC and HESS, as well as the upcoming CTA project.  
+
+On the neutrino front, the KamiokaNDE I and II experiments ran through the 80's, beginning in 1983, and while they intended to detect proton decay, their detectors were sensitive enough that they were able to detect atmospheric, solar and astrophysical neutrinos. The apparatus is a 3000 metric ton pool of water, which is ideal for a proton decay experiment as it contains a high concentration of hydrogen atoms and facilitates Cherenkov light production \cite{kamiokande}. That said, the large fiducial volume of the detector, the sides of which are lined with 1000 PMTs specially designed by Hammamtsu, makes it such that any high energy particle interacting inside will be caught (as it must for their background rejection). Famously, this experiment caught neutrinos from Supernova 1987A, which were likely the first ever astrophysical neutrinos measured and identified. 
+
+In the transition from the late 1980's to the early 1990's, the field of particle astrophysics, especially UHECR astrophysics, began to resemble its current form. Through the interest of Nobel laureate James W Cronin, and other particle physicists, as well as X-ray astronomers, the goal of figuring out the acceleration mechanisms of UHECRs came to the front of the field. Accordingly, a number of sensitive and precisely executed experiments were built; for the sake of brevity, I will highlight two: the Akeno Giant Air Shower Array (1990-2004) and CASA-MIA (1990-1997). The Akeno Giant Air Shower Array (AGASA) was a 100 km$^2$ array in Japan at the Akeno Observatory consisting of surface and buried scintillation detectors and was built with the explicit intention of observing cosmic rays of $10^{17}$ eV or higher. Some infrastructure and detectors were already installed as early as 1984 from other ventures \cite{agasa}. AGASA paved the way for the Auger Observatory, but was the direct predecessor, along with Fly's Eye, to the Telescope Array \cite{ultraray}. 
+
+CASA-MIA, or the Chicago Air Shower Array-Michigan Muon Array, set out with a slightly different objective. Instead of looking for the showers caused by hadronic primaries, the objective of CASA-MIA was to explore the arrival directions of Very High Energy (VHE) gamma rays. In the optical to low gamma ray energy regimes, only direct detection of photons is possible, usually by balloon- or space-borne detectors, but gamma rays above ~ 10 GeV cause air showers much like UHECRs except scaled down and of much lower muon content and higher $X_{max}$. To detect these, about one thousand surface stations consisting of 4 scintillation counters (CASA) each, topped with an ancient lead (i.e. low radioactivity) sheet to encourage pair production in shower photons, and about one thousand more buried scintillation counters (MIA) were employed in a .23 km$^2$ array \cite{casamia}. 
+
+ The basic idea is to catch the showers from \~ 10$^{14}$ eV - 10$^{16}$ eV gamma rays, and reject hadronic showers of similar energies through their muon multiplicity. Perhaps ironically, the CASA-MIA team provided much of the expertise and drive for the construction of Auger, but the detector itself is more of a functional predecessor to the High Altitude Water Cherenkov Experiment (HAWC), a gamma ray observatory which uses air shower techniques and direct particle detection. Through the CASA-MIA experiment, much was learned about how to set up a distributed array and how to design effective detection logic. 
+
+This more or less brings us to the beginning of the current era of UHECR physics, which is dominated by the Auger Collaboration, of which I am a member, and the Telescope Array (TA). A more detailed description of both experiments will be given in \autoref{auger} and \autoref{ta}, respectively, but to give context, the Pierre Auger Observatory started development in the late 1990's and began construction in 2000 in Malargue, Mendoza Province, Argentina, at the turn of the millennium. Operation began in 2004, and has continued through to today. The TA experiment began development around the same time as Auger began operation, and is located at Dugway Proving grounds, in a site expanded around the Fly's Eye experiment. Both apparatuses measure UHECRs of 10$^{18}$ eV+ throughout the bulk of the array, and feature low energy infills for engineering tests and to expand their sensitivities to energies as low as 10$^{16}$ eV.
+
+%you should talk about fly's eye, milagro, agasa(check), kamiokande(check), CASA-MIA(check), at least mention Haverah Park(check)
+\section{Motivation and Goals}
+Broadly, the work in this document aims to advance the progress towards an upgraded Pierre Auger Observatory, dubbed \textit{AugerPrime}. Auger has successfully shown that air shower arrays can cover massive areas to obtain exposures large enough to precisely fill in the highest energy portions of the cosmic ray spectrum. Its upgrade is primarily motivated by a two part case. First, the composition of UHECRs is a vital measurement in moving the field of charged particle astronomy forward. By understanding the composition of the highest energy cosmic rays, we can work to find the rigidity of each particle as it propagates to the Earth. With this information, $Z$ dependent anisotropy studies may elucidate, or help elucidate, the mystery of the origin of UHECRs.
+
+The other component of the motivation in upgrading Auger, is a modernization effort. Inexpensive and powerful electronics have developed over the past 15 years since Auger was built, and in order to ensure the continued operation, and to take advantage of increased performance, the entire electronics package is being upgraded. The scintillation and radio detectors that are to be integrated into the upgraded surface detectors will need additional data handling and processing abilities. This electronics upgrade also supports the composition measurement goal, by adding the facilities necessary to measure added channels of incoming data as well as a much more powerful onboard processing and programmable logic system. Adding a flexible programmable logic device will allow us the modify the functionality, especially the trigger logic, in situ. 
+
+In particular, the work in this document will concern the design of the programmable logic, the operating system software, the time-tagging logic, and the hardware and software integration of the new GPS model. Supporting these design tasks, I will also review verification data for the time-tagging system to determine the overall time resolution of the upgraded detector and show the results of testing GPS receiver models for the upgrade. Continuing along this path, results created using branches of the AugerPrime time-tagging hardware will also be included (e.g. quantification of spatial dependence of GPS timing errors, a miniaturized in situ timing system for Auger\@TA, etc.).
+
+To round out the work included, I will also be reporting preliminary results from a follow-up to Auger's recent correlation of UHECR arrival directions with Starburst Galaxies. In this category, I will be showing software written by the High Energy Astrophysics group at CWRU to execute and manage simulations of UHECR back propagation through the JF12 magnetic field model. We will simulate a meaningful portion of the available arrival direction data, and use a very basic statistical method to infer the significance of the distribution of SBGs over an isotropic distribution.
+\chapter{Cosmic Ray Spectrum and Source Models}
+In this chapter, the all particle spectrum will be reviewed via the famous Swordy plot, which will lead us through a brief discussion of its main features and their phenomenology. Finally, I will provide a discussion on how sources are constrained and the possible sources of UHECRs.
+\section{Spectrum}
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=5.2 in]{./images/swordy_all.png}
+\caption{The all particle spectrum, often called the Swordy Plot, after Simon Swordy, updated and put together in \cite{swordyplot}.}
+\label{swordy}
+\end{center}
+\end{figure}
+
+
+Cosmic radiation in the broadest sense concerns all particles which enter Earth's atmosphere from outer space. The spectrum as measured of cosmic radiation (or cosmic rays) spans about 12 orders of magnitude in energy and many more in flux. At the lowest end of the spectrum, the sources are relatively clear from power concerns; in particular they are believed to be injected by supernovae and supernovae remnants \cite{stanev}. Detectors of lower energy (below the knee) cosmic rays, see temporal modulation of the flux based on the solar magnetic fields, and effect commonly called ``solar wind''. Moving up in the energy, we see two distinct breaks in the all-particle spectrum (pictured in \autoref{swordy}). At slightly under 10$^{16}$eV, we see a break at what is called the ``knee'' into a steeper (harder) spectrum, and then a softening at the ``ankle''. 
+
+Below the knee (lower than 10$^{16}$eV), it is widely agreed that supernovae and supernovae remnants make up the largest portion of cosmic rays \cite{stanev, crapp}. At these energies, charged particles are deflected far too much to be a reliable marker of sources, but gamma rays especially along with neutrinos and x-rays paint a fairly clear picture of supernovae remnants being the most probable sources \cite{stanev, sean, foteini}. Around the knee but before the ankle, the sources are slightly less clear since this is above the cutoff of major gamma ray and neutrino experiment's sensitivities, but is below the sensitivities of UHECR detectors. In this regime, Fermi shock acceleration (often just Fermi acceleration, or the Fermi mechanism) provides a good explanation for the shape of the spectrum and the particular physical mechanism of acceleration. Further explanation of Fermi acceleration will follow in \autoref{fermi}.
+
+At the ankle and above, we enter the territory of Ultra High Energy Cosmic Rays, which the main body of work in this thesis 
+concerns. It is worth mentioning at this point, the final feature in the spectrum, which is the approximate cutoff at the GZK limit of $5\times10^{19}$eV. The Greissen-Zatsupin-Kuzmin (GZK) limit, is a particle physics upper limit on the energy of long traveling protons. Observationally, this limit is obfuscated by the measured mixed composition of cosmic ray primaries, at which point one can think about it naively as a ``per proton'' energy limit\cite{futuregzk}. Sources in this energy regime become more mysterious, and will be the topic of \autoref{sources}. 
+\begin{figure}[H]
+\begin{center}
+\includegraphics[width=4.2 in]{./images/swordy_high.png}
+\caption{The high energy spectrum, multiplied by $E^3$ to allow for greater discernibility.}
+\label{swordyhigh}
+\end{center}
+\end{figure}
+\subsection{Fermi Shock Acceleration}
+\label{fermi}
+Fermi acceleration plays an important role in shaping the cosmic ray spectrum, and as noted in \cite{crapp}, provides an easy transition from below the knee to above it. The essence of shock acceleration, is that moving regions of relatively high magnetic field can turn around and effectively accelerate particles. These regions must be relatively sparse as collisions will thermalize particles, and the mechanism is specifically an explanation for non-thermal particles. These magnetic mirrors can take a number of different forms, although they are believed to usually be the bow shocks of large objects. For example, shock acceleration can be seen in the bow shock of even such a mundane astrophysical object as the Earth \cite{shocks}. In Fermi's original 1949 paper, he begins by considering a plasma cloud.
+
+Before discussing some useful and convincing features of Fermi acceleration in the first-order, let's first go through and show the energy gain from such a scenario, following the procedure in Chapter 11 of \cite{crapp}.
+\begin{figure}[H]
+\begin{center}
+\includegraphics[width=3.2 in]{./images/shockacc.png}
+\caption{A simple diagram of the important quantities in Fermi acceleration.}
+\label{shockacc}
+\end{center}
+\end{figure}
+First, it should be made clear that while the simple calculation performed here depends on only the velocity of the plasma cloud (or bow shock) and the incoming and outgoing angles of the particle, it is assumed that inside the cloud, the particle can be deflected many times through smaller diffuse ``collisions'' with effectively random internal magnetic fields. Now, looking at the energy of the incoming particle in the frame of the plasma cloud, we have:
+$$ E_1'=\gamma E_1(1-\beta \cos\theta_1). $$
+where $E_1$ is the incoming particles energy in the lab frame, and $\gamma$ and $\beta$ are the relativistic factors as commonly used in the literature of special relativity, and $\theta_1$ is the angle between the plasma cloud's velocity and the particle's velocity as measured in the lab frame. In what may seem like an obvious statement, magnetic fields do no work, or equivalently the magnetic field ``collisions'' are completely elastic, and therefore the total energy of the particle on the way out in the cloud's frame is the same as that on the way in, and so in the lab frame:
+$$ E_2=\gamma E_2'(1+\beta\cos\theta_2'),$$ 
+where all is as above less that $\theta_2'$ is the particle's outgoing angle as measured in the frame of the cloud. Combining these two for a hyper-relativistic particle (i.e. assuming the dispersion relation for a photon), the change in energy can be written as:
+\begeq{\frac{\Delta E}{E}=\frac{(1-\beta\cos\theta_1)(1+\beta\cos\theta_2')}{1-\beta^2}-1.}
+From here, we need only average appropriately over both angles. In the case of $\cos \theta_2'$, considering the particle can exit at any angle, and in this model none are preferred, $\langle\cos \theta_2'\rangle=0$. Phenomenologically, it is assumed that the probability of a deflection is proportional to the relative velocity between the cloud and the particle. This would come naturally by considering the ions within the cloud as little magnetic deflector dipoles. From this, the angular distribution of the deflected particle would be:
+$$\frac{dn}{d\cos\theta_1}=\frac{c-V\cos\theta_1}{2c},$$
+where we allow any incoming angle. This gives $\langle\cos\theta_1\rangle=-V/3c$, for a final result of:
+\begeq{\xi=\frac{1+\frac{\beta^2}{3}}{1-\beta^2}-1\approx \frac{4}{3}\beta^2. \label{shockresult}}
+Here, we give $\Delta E/E$ the convenient name $\xi$, for the fractional change in energy. This is perhaps the most basic but central result of the theory of second order Fermi acceleration. Given that $\beta$ is strictly nonnegative, \autoref{shockresult} shows that simple interactions, which are elastic in the frame of the plasma cloud, can give energy to particles in the lab frame. Here, we have made the assumption that the cloud will be non-relativistic, although the treatment can be extended to relativistic clouds. In fact, when this treatment is extended to relativistic sources, they can gain as much as a factor of $\gamma^2$ energy from their first interaction, which could be very large \cite{shocks}. It is also common to do this exercise for sheets of magnetic deflectors, resulting in first order Fermi acceleration. 
+%\begeq{\frac{\Delta E}{E}=\frac{1-\beta\cos\theta_1)(1+\beta\cos\theta_2')-\beta^2\cos\theta_1\cos\theta_2'}{1-\beta^2}-1}
+
+There is nothing in particular which stops a particle from undergoing this process multiple times, even within the same cloud, in which case we have the relation:
+$$E_n=E_i(1+\xi)^n,$$
+with $E_n$ the energy after the $n$th cycle, and $E_i$ the initial energy. From here, we can go a number of ways. By assuming a time per acceleration cycle, we can begin to consider how the age of the plasma cloud affects the maximum energy of a particle accelerated by it. Furthermore, it is hardly a stretch to invoke a probability of re-acceleration, and from this a power law spectrum comes out.  
+
+\section{Sources At The Highest Energies}\label{sources} %make sure you include a hillas plot and explain it, explain that it must show a power law spectrum
+As mentioned previously, the sources of the highest energy cosmic rays ($E>10^{18}$eV) are by no means obvious. It is still a very active topic of research, and the conclusions that are currently considered relatively concrete are more categorical than specific. To outline today's thinking on the topic, I will first discuss two of the easier conditions that are imposed on potential sources, namely power conditions (i.e. can a source actually produce enough UHECRs within a reasonable efficiency) and the Hillas Criterion, along with the Hillas plot. Briefly, the Hillas criterion compares the magnetic fields and radii of astrophysical objects in a magnetic containment scenario, to give a constraint on the energy of particles they could produce. 
+
+After discussing the two basic criterion, I will move on to a more specific discussion of the two primary acceleration scenarios, namely top down and bottom up, and then expand on the bottom up scenarios, which are currently more feasible (I will also elucidate that statement). Finally, I will include a discussion of some of the hard facts about sources as we know them, namely the anisotropy of the highest energy cosmic rays, and their composition measurements.
+
+\subsection{Power Considerations}
+By considering the density of cosmic rays through integrating the spectrum, we can put a constraint on their energy density in the galaxy. Let's take, for ease of calculation, Gaisser's rough estimate of an energy density of $\rho_E=1$ eV/cm$^3$ \cite{crapp}. We then need to know the volume of the galactic disk, which can be estimated as :
+$$V_D=\pi R^2 d\approx \pi \times (15\mbox{ kpc})^2\times200\mbox{ pc}\approx4\times10^{66}\mbox{ cm}^3.$$
+ We then can find the power by taking the total energy contained in cosmic rays, and dividing it by the average confinement time (a result of the leaky box model), also known as the mean residence time,
+ $$P_{CR}=\frac{V_D \rho_E}{\tau_R}\approx 5\times10^{40} \frac{\mbox{ergs}}{s}=5\times10^{33}\mbox{ W}.$$
+ Here, we have $\tau_R$ as the mean residence time of a cosmic ray in the galaxy and I have broken the calculation out of the somewhat archaic ergs/s into watts. Continuing to follow Gaisser's treatment of the topic, a 10 solar mass ejection originating from a type II supernova with an average velocity of $5\times 10^8$ cm/s and a frequency of 30 years gives a power of $P_{SN}=3\times10^{42}$ ergs/s or $3\times 10^{35}$ W. With what would seem to be a fairly low efficiency, supernovae can easily power all of the observed cosmic rays. This, however, says nothing about the physical mechanisms of acceleration it simply gives a necessary but not sufficient condition. Further analysis shows that there is no obvious mechanism for supernova blast waves to accelerate cosmic rays to $>10^{18}$ eV, outside of their possible contribution to diffusive shock acceleration. Therefore, the calculation presented here pertains only to cosmic rays under approximately 100 TeV. 
+ 
+ Looking at higher energies using the same technique, we see the requirements tabulated in table 2.1.%you're going to have to check this becausee the damn labels are showing up in the wrong place
+  These are for rays of up to 10 PeV, and for higher energies, particularly those $>$1 EeV, a calculation beyond the scope of this work is required. That said, the point here is that power constraints can be an important requirement to rule out sources before looking for an actual physical explanation for how a source would produce UHECRs.
+
+ \begin{table}
+ \label{powereqs}
+ \begin{center}
+\begin{tabular}{|l|l|l|} \hline
+ Energy & Power (erg/s)  & Power (W)  \\ \hline
+ $>$ 100 TeV& \textasciitilde2$\times10^{39}$ &\textasciitilde2$\times10^{32}$ \\ \hline
+ $>$ 1 PeV& \textasciitilde2$\times10^{38}$ &\textasciitilde 2$\times10^{31}$ \\ \hline
+$>$ 10 PeV &\textasciitilde 5$\times10^{37}$ &\textasciitilde 5$\times10^{30}$  \\ \hline
+\end{tabular}
+\end{center}
+\caption{Here the power required by cosmic accelerators to account for portions of the spectrum with increasing energies are given. These calculations are out of \cite{crapp}.}
+\end{table}
+\subsection{Hillas Criterion}
+Examining the relationship between a sources ability to confine particles and the highest energy particles it can produce gives us the venerable Hillas Criterion. First published in 1984, Hillas looked at the Larmor radius, i.e. the radius in which a particle of constant velocity is confined in a magnetic field, and considered the constraints on astrophysical accelerators that this gives \cite{hillas}. This resulted in the Hillas plot or diagram, which has become a central tenant of the field \cite{stanev}. Following the original treatment in his paper, the Larmor radius for a hyper-relativistic particle is:
+$$ r_L=1.08\times\frac{1}{Z}\left(\frac{E}{10^{15}\mbox{ eV}}\right)\left(\frac{B}{1\mbox{ $\mu$G}}\right)\mbox{ pc}, $$
+where $r_L$ is the Larmor radius, Z is the atomic number, E is the energy of the cosmic ray in question and B is the magnetic field of the potential accelerator. From here we can turn this equation around to give us the maximum energy from a particular accelerator, however we will need to look after a couple of details first. In order to truly account for the accelerating ability of an object, we have to account for the movement of the magnetic centers within the object. This involves correctly introducing a factor of $\beta$, and furthermore there is a factor of 2 that shows up in the criterion due to the radius being half the length of the circular accelerator. Putting these together, we arrive at:
+$$\left(\frac{B}{1\mbox{ $\mu$G}}\right) \left(\frac{L}{1\mbox{ pc}}\right)>\frac{2}{Z \beta}\left(\frac{E}{10^{15}\mbox{ eV}}\right),$$
+in which L is the length of the accelerator, and $\beta$ is the relativistic speed factor of its constituent shock producers. Turning this on its head and using the radius (i.e. cancelling the 2), as is common practice, we arrive at what is now widely accepted as the Hillas condition or criterion (which, as far as I can tell, does not appear in the original paper):
+\begeq{E_{\mbox{max}}=\beta Z e \left(\frac{B}{1\mbox{ $\mu$G}}\right) \left(\frac{R}{1\mbox{ kpc}}\right)\mbox{ EeV}.}
+In this particular version of it, out of \cite{stanev}, it is rewritten in EeV so as to be more useful in the context of UHECRs. From here, we can make a log-log plot in magnetic field versus radius and draw contours on it to represent the energy of particles produced along the contour. Such a plot is included in \autoref{hillasplot}.
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=4.2 in]{./images/hillas_100EeVlines.png}
+\caption{The famed Hillas Plot from \cite{stanev}, showing possible UHECR acceleration candidates organized by their magnetic fields and radii. The contours drawn here represent 100 EeV and the $\beta$s are those of the diffuse shock acceleration fronts of which the accelerator would be composed.}
+\label{hillasplot}
+\end{center}
+\end{figure}
+Again, it is important to emphasize that this is a necessary but not sufficient criterion for a cosmic accelerator to reach ultra high energies in its output. Examining \autoref{hillasplot}, it we can see that many astrophysical objects are ruled out at the highest energies, however the contours on this particular plot are drawn rather high at 100 EeV. That said, drawing contours at this energy appears to be the tradition start by Hillas in his original 1984 paper.
+\subsection{Top Down vs. Bottom Up}%you may not see GZK in top down models
+In the drive to understand the sources of UHECRs, there are effectively two over-arching categories of proposals. Those which involve the decay of supermassive relic particles, inflationary topological defects, or other Grand-Unified-Theory level particles, and those which invoke only the standard model of particle physics or less to explain acceleration via statistical or large astrophysical phenomena. 
+\subsubsection{Top Down Models}
+Many top-down models exist as the particles that they require are often natural byproducts of exotic theories in cosmology and particle physics. In a top down theory, a particle or topological defect decays and produces a spectrum of particles. In many models these decays should release in the range of 10$^3$-10$^7$ EeV of energy \cite{stanev}. 
+
+Topological defects are proposed to have originated during fluctuations during phase transitions in the early universe. As the energy density of the early universe drops through inflation, models of topological defects predict it necessary to have regions where, in order to preserve causality, energy will be trapped. While these regions come in dimension 0-3, only magnetic monopoles of approximate dimension 0 and cosmic strings of dimension 1 should decay/break symmetry to produce UHECRs \cite{stanev}. Some of the issues with such models include that the dynamics of the strings and monopoles become important, and that there should be modulation/suppression of the GZK cutoff. In some models, the cosmic strings and monopoles must actually meet (in the case of monopoles, it must meet its anti-particle), and given their rarity, this greatly suppresses the flux of UHECRs compared to what is observed \cite{tds}. It is also common in such models, to expect the topological defects to aggregate in the galactic halo. If this were true, then (in most models) the spectrum should not cutoff at extremely high energies, which is contrary to what is observed \cite{swordyplot}.
+
+On the other hand, relic particles, a form of non-thermal cold dark matter, could have been formed in a freeze-out of the early universe, perhaps at the surface of last scattering, and would then wander the universe in a metastable state. At some later time, they would decay into some quantum number conserving mix of particles. The energies estimated here are generally around 10$^{12}$ GeV, and the particles would be affected by gravitational pull. Given this, it is expected that they would agglomerate at the centers of galaxies, in which case distinguishing them from AGN lobes/flares as accelerates could prove difficult. 
+
+Most importantly for both models, is that they would both be expected to produce large amounts of ultra high energy gamma rays and ultra high energy neutrinos. This is a serious problem given the current best results of the relevant experiments, namely Auger, TA and Hi-Res\cite{futuregzk,foteini}. 
+\subsubsection{Bottom Up Models}
+\label{bottomups}
+Bottom Up models of UHECR acceleration invoke only known physical phenomena, and inside of that almost exclusively electromagnetic mechanisms. As is startlingly clearly laid out in the relatively recent review by Stanev (\cite{stanev}), there are truly only two physical mechanism in this category: shock/statistical/Fermi acceleration and so-called ``one-shot'' acceleration. 
+
+Shocks are outlined and discussed in \autoref{fermi}, but to review, any sort of abrupt region of fairly high magnetic field (compared to its surroundings) can act as a region of shock acceleration. Through stochastic processes, particles are accelerated by what are effectively considered point deflectors. While energy is not gained or lost in each interaction in the shock ``cloud's'' frame, the particle experiencing deflections can overall gain energy through cycles of such deflections.
+
+One shot acceleration mechanisms (also sometimes called inductive acceleration) largely consist of ``compact spinning magnetized'' objects, which in effect is the long way of saying rotating young neutron stars and in particular magnetars. In this regime, an object simply produces a terrifyingly large electric field, which is not uniform by terrestrial accelerator standards, but is uniform enough, to take an entering particle and boost it up to UHECR energies in one shot. There are also some scenarios where regions of radio-loud Active Galactic Nuclei (AGNs) can produce large enough electric fields to accelerate particles to ultra high energies, but these are oft constrained by the density of particles surrounding them (particle density surrounding an accelerator implies likely collisions and therefore thermalization). 
+
+Since a detailed description of each possible source scenario is perhaps a tedious endeavor for both the reader and the writer, a table is provided below to describe the important aspects of the major source scenarios. The data in this table is compiled from the very straightforward review by Letessier-Selvon and Stanev (\cite{stanev}, 2011), from the review by Berezinksy (\cite{tds}, 1999) and most importantly the thesis by Oikonomou (\cite{foteini}, 2014) which is probably the most clear review of bottom up source candidates I have seen.
+\begin{table}[H]
+\begin{center}
+\begin{tabular}{|p{.8in}|p{.6in}|p{.6in}|p{2.2in}|p{2.1in}|} \hline
+Source Type & Shock / Inductive & Matter Density Issues & Description & Main Issues \\ \hline
+AGN (radio-quiet) & Shock & Yes & AGNs in general are a rather appealing possible source being abundant and very energetic.  & Radio Quiet AGNs rely on shocks at the end of their jets, however the matter density is too great for them to be likely UHECR producers. \\ \hline
+AGN (radio-loud) & Both \cite{shearedjets} & None in the extended radio lobes & Radio loud AGNs, and particularly those of type FR-II can have both shock acceleration sites and inductive acceleration sites where there is little matter density to stop acceleration. & There are fewer of these than radio-quiet AGNs, and so it should be harder for them to account for the total flux of UHECRs \cite{radioagn}. \\ \hline
+BL Lac Objects (subclass of Blazars) & Likely Inductive & Yes & Blazars are generally AGNs which are eating away at their accretion disks. Different configurations give different levels of variability in their emission. They are generally visible in the very high energy gamma-ray spectrum. A fairly recent paper by Murase et al. (\cite{muraseblazar}) points out that these can satisfy the Hillas Criterion but does not firmly pin down a physical mechanism of acceleration.  & The two main issues are that BL Lac objects are bright because of the matter they accrete, and so there are some issues with thermalization here. Additionally, they only barely meet the Hillas Criterion to get to the highest energies. \\ \hline
+Gamma Ray Bursts (GRBs) & Shock & Not significant & Gamma Ray Bursts are believed to be the product of a relativistic fireball in a super-luminous supernova. Since 1995, these have been pointed at as a tantalizing source of UHECRs, however they are surrounded in minor controversy as they were first introduced when the insufficient AGASA data came out, which indicated a flat spectrum and no cutoff at the highest energies. \cite{waxmangrb,stanev} & GRBs should produce large amounts of neutrinos in their interactions, since much of the relativistic fireball they are believed to consist of is leptonic. IceCube has, at this point, set constraints which make these somewhat less favorable \cite{foteini}. \\ \hline
+Waves in the Interstellar Medium (ISM)/ Intergalactic Medium(IGM) & Shock & No & A variety of phenomena are capable of producing large shocks in the interstellar medium, or even in the relatively dense intergalactic medium around superclusters. Galactic mergers are considered a likely source of IGM shock waves, while supernovae and other star formation adjacent processes have been suggested to cause shocks in the ISM local to their Starburst regions \cite{sbgshocks}. & Definitive proof of shocks that satisfy the Hillas Criterion has not yet been shown for the ISM in Starburst regions, although many sources say there will be qualifying shocks in the similar but less dense magnetohydrodynamic fluid. Murase et al. in 2008 \cite{muraseshocks} showed that the IGM can qualify for producing UHECRs around the ankle, although not at the highest energies.\\ \hline
+Magnetars/ Pulsars & Both, but primarily inductive & No in most cases & Pulsars, a subclass of which are magnetars, are rapidly rotating neutron stars and are the primary candidates for inductive acceleration. From a theoretical standpoint, these are particularly promising as they can be shown to produce a spectrum similar to observations \cite{pulsaruhecrs}.  &  The viability of rotating neutron stars as UHECR sources is at the mercy of neutrino observatory data. In the near future, they could be ruled out if no high energy neutrinos are found \cite{pulsarno}. \\ \hline %finish this section
+\end{tabular}
+\end{center}
+\end{table}
+%look into this iopscience.iop.org/article/10.3847/0004-637X/817/1/59/meta
+%One appealing feature is that these would produce a heavier composition of UHECRs, which is in line with recent observations.
+\subsection{Composition}
+From a first principles perspective, the composition of cosmic ray primaries is one of the most important features of both sources and showers. However, the difficulties in determining the composition of primaries via the signal from surface detectors or even fluorescence telescopes are numerous. This will be discussed in greater detail in \autoref{detectors}. That said, by looking at the maximum of particle production, denoted $X_{\mbox{max}}$, a statistical determination can be made, in particular over many data points, to find the average composition per energy. Doing so has been one of the triumphs of the Auger Observatory, and the data as they stand are a point of contention amongst contemporary experiments. 
+\begin{figure}[H]
+\begin{center}
+\includegraphics[width=6.5 in]{./images/composition_auger.png}
+\caption{Left: the averages of $X_{\mbox{max}}$ as a function of energy with contour lines drawn for their values based on 3 of the premier hadronic interaction models. Right: the standard deviation of $X_{\mbox{max}}$ as a function of energy, with contours drawn similarly to those on the left. This figure is taken from an Auger Collaboration publication (\cite{futuregzk})}
+\label{compositionplot}
+\end{center}
+\end{figure}
+A trend worth noting in \autoref{compositionplot} is the tendency for higher energy cosmic rays to be heavier in composition. If we look back at both the shock and inductive models of acceleration, both depend on $Z$, the atomic number directly, and so we expect this heavier composition at higher energies if these are correct. 
+
+One of the goals of the next generation of UHECR experiments is to better determine the composition of primaries. While Auger and TA currently attempt to find the composition on a per event basis, the errors are large enough that composition dependent anisotropy studies are not possible.  Being able to determine composition on an event by event basis would be a major advantage since it gives the ability to select high energy proton events, which should be deflected less than higher $Z$ nuclei in galactic and extragalactic magnetic fields.
+\subsection{Anisotropy}
+Even since the first days of UHECR physics, one of the main questions has been whether the origin of UHECRs is galactic or extra galactic. In the late 90's, some conclusions were attempted with AGASA, Haverah Park, Fly's Eye and even Volcano Ranch data \cite{tds}. Recently, the Auger Collaboration has published findings in Science (\cite{anisotropy}), which show that at the 5.2$\sigma$ level, there is a dipole anisotropy in the arrival directions of UHECRs pointing away from the galactic center. This result represents the most definitive proof to date that the origin of UHECRs is extragalactic. 
+\begin{figure}[h!]
+\begin{center}
+\includegraphics[width=6.5 in]{./images/anisotropy_auger.png}
+\caption{Left: the averages of $X_{\mbox{max}}$ as a function of energy with contour lines drawn for their values based on 3 of the premier hadronic interaction models. Right: the standard deviation of $X_{\mbox{max}}$ as a function of energy, with contours drawn similarly to those on the left. This figure is taken from an Auger Collaboration publication (\cite{anisotropy})}
+\label{anisotropyplot}
+\end{center}
+\end{figure}
+\figwrap{\label{firstharm}Pictured here is the first harmonic in the anisotropy decomposition done by the Auger Collaboration in \cite{anisotropy}}{./images/firstharm.png}{2.5 in}{l}
+The analysis represented in \autoref{anisotropyplot}, essentially breaks down the sky along the direction of right ascension (i.e. direction of the Earth's rotation, effectively corresponding to galactic longitude) into a decomposition of cosines and sines of different frequencies. An example of how the data fits to these decomposing basis functions is given in \autoref{firstharm}.
+
+The important result here is that the maximum of the dipole is pointing away from the galactic center, which implies that the origin of most UHECRs is extragalactic. For all of the source models I've introduced, less the top-down ones, this is effectively assumed, however the extragalactic nature of UHECRs should not be taken for granted as it was a hotly debated topic for decades \cite{hillas,tds}.
+
+Additionally, as mentioned above, the ``holy grail'' of anisotropy studies would be a composition and energy dependent anisotropy study with high statistics, which is one of the probable final products of the AugerPrime upgrade. 
+
+\subsection{Concluding Thoughts: Cosmic Ray Spectrum and Sources}
+Through decades of work, the cosmic ray spectrum has been carefully measured up to energies approaching 10$^{21}$ eV, and as the exposure of the current generation of detectors increases, I expect that more features of the spectrum will be elucidated in much the same way that the ``second knee" has recently been. Furthermore, I expect that at least some of the mysteries regarding sources will be opened up by the coming upgrades and advances in technology, in particular the radio technique, the AugerPrime upgrade, CTA and IceCube Gen2. The nature of UHECR source candidates is such that they rarely only emit in the cosmic ray band, they also should be one or both of neutrino emitters and gamma ray emitters. With the advent of multi-messenger and higher aperture gamma ray and neutrino observatories, the field will get even closer to determining the correct source model.
+
+Additionally, I would like to comment that many in the field look at finding a single source model as the ``Occam's razor'' solution to the problem of ``where do UHECRs come from?". It seems to me and others that it may in fact be simpler if we consider that there are likely multiple types of sources with slightly different output spectra, but similar acceleration mechanisms. Since diffuse shock acceleration can happen at almost any size scale given a decently large magnetic field, there are likely multiple ways for a particle to reach the highest energies through bottom up models. 
+
+Finally, as far as top down models are concerned, I should note that it would be very interesting to look at the number of UHECR shower events as a function of long time periods. Perhaps 3 to 4 generations down the line, radio, optical or particle telescopes will have the aperture needed to observe showers on other planets, or perhaps other solar systems. If the origin of UHECRs truly is somehow attributable in full or in part to the decay of particles, then the simple laws of radioactive decay should apply, and one should be able to observe a decreasing exponential behavior in the number of events over time. 
+
+
+\chapter{Extensive Air Showers and Cosmic Ray Detectors} %particle physics basics, weighted moments, elongation rate, transport equations, Xmax, LDF, parton theory, GZK, heitler model, obviously not in that order}
+Through this chapter, I plan to give a description of some older and some more modern theories of how to quantify the important aspects of the air showers caused by Ultra High Energy Cosmic Rays. This will lead into a discussion of the various methods that have been employed to detect extensive air showers, and an overview of a few important experiments that employ them.
+\section{Extensive Air Showers}
+When an atomic nuclei or single proton of $10^{18}+$ eV (frequently called the primary) comes crashing into the upper atmosphere, particle physics at the very edge of humanity's current understanding ensues. After a violent disk of plasma created by slightly-beyond-the-verified-standard-model processes cools out into high energy Large Hadron Collider level interactions, the shower is carried down in phenomena quantified by a clever mix of particle physics and statistical mechanics. The first $10^{-15}$-or-so seconds of this process (after the extrapolated standard model physics) are described by the basic principles of particles physics, and so the treatment in this chapter will start there. After this point, we typically become more concerned with how the particles ``transport'' from one species to another, and how much energy is deposited in the nearby air. The rate at which particles are moved from pure kinetic energy of the prompt secondaries into matter in the later secondaries is a main parameter of cosmic ray showers and its maximum, $X_{max}$, is perhaps the best known predictor of the primary particle's composition.
+
+After the shower undergoes its maximum of particle production, we usually become more concerned with the observable parameters on the ground, which can be seen by typical particle counting or calorimetric detectors. These observables are, in the case of the surface detector stations of Auger, derived from the signal recorded by one or more types of ground based detection. From this, a number of important observables can be extrapolated, however the two of central importance that I would like to mention are the muon-to-electron ratio ($N_{\mu}/N_e$) and the lateral density function (LDF). $N_{\mu}/N_e$ can be derived from a single analog to digital converter (ADC) trace, or more accurately derived from multiple ADC traces from two or more types of detectors, ideally with different responses to muons and electrons, such as a scintillator and a Water Cherenkov Detector (WCD).
+
+In this chapter, I will give overviews of this process at each level. On the topic of particles physics, I will present a treatment which discusses the steps for calculating decay widths and cross sections of the electroweak force, but does not delve into the group theoretic fundamental structure underlying the modern theories of particles physics. It should be noted, the mathematics used to describe these extensive air showers (or just ``showers'') was derived for lower energy primaries. After the initial higher energy processes, much of it is still entirely valid, but to tie the chapter into how this work is actually done, I will include a discussion of the premier air shower simulation package, CORSIKA, which is almost always used instead of hand calculations for modern experimental design, verification and data analysis.
+\subsection{Particle Physics Basics}
+To start from the beginning of the story, particle physics as we know it today, stems from the 1928 equation by Dirac \cite{dirac}:
+\begeq{i \slashed{\partial}\psi=m\psi. \label{diraceq}}
+Outside of $i$, the square root of negative one, and $m$, the mass of the particle, each of these actors will need an explanation. First, we should introduce their names, $\slashed{\partial}=\gamma^\mu \partial_\mu=\gamma^\nu g_{\mu\nu} \partial^\mu$ is the four dimensional partial derivative operator contracted with a set of the ``gamma matrices'' ($\gamma^\mu$). There are a number of bases we can put these in, but the two most common are the Dirac basis and the Weyl basis. The Dirac basis is used  for most calculations, while the Weyl basis is typically used when discussing the chirality of particles, in which case it can be used to decouple the Dirac equation into two easily solved second order differential equations. 
+
+Going back to \autoref{diraceq}, $\psi$ is an object called a bi-spinor, and represents the particle's wavefunction. A spinor, is a vector with two complex entries which transforms under the SU(2) group. Frequently, these spinors are required to have magnitude 1, and so a bi-spinor is a four complex entry vector that mechanically looks something like:
+$$\begin{pmatrix}\begin{pmatrix}
+a \\
+b
+\end{pmatrix}\\
+\begin{pmatrix}
+c \\
+d
+\end{pmatrix}\end{pmatrix},$$
+a mathematical structure which is required by the Dirac equation. In general, we impose this normalization condition on the wavefunction $\psi$:
+$$\bar{\psi}\psi=\psi^\dagger\gamma^0\psi=1.$$
+Above, the $\dagger$ represents the hermitian conjugate, and $\gamma^0$ is the zeroth member of Dirac's gamma matrices. In connection with Schr{\"o}dinger's quantum mechanics, the entries of these bi-spinors are frequently simple plane waves and represent both the spatial and temporal behavior of the particles.
+
+From a utilitarian perspective, these bi-spinors and the results of the Dirac equation become useful when seen through the standard model Lagrangians, Feynman diagrams, and ultimately the path integral formulation \cite{crapp}. While the path integral formulation is certainly the most powerful tool for calculating cross sections and decay widths, a discussion of how to use it is outside the experimentally-focused nature of this work. Let's proceed by discussing some of the basic processes that occur in the detection of astrophysical particles from a basic particle physics view.
+
+The Lagrangian is, at the lowest level of complexity, a statement of a classical systems total energy. When we apply this concept to particles of the standard model however, we see that it becomes a statement of the basic possible interactions available through each force\cite{cottingham}. For example, when we look at the Lagrangian density statement for the weak force as it pertains to interactions between electrons and neutrinos, we find a term for the charged current interactions of electron neutrinos and electrons, and its quantized operator structure like this:
+\begin{figure}
+\begin{center}
+\begin{tabular}{lccc}
+
+Term: &$\mathscr{L}_{EW}\supset-2\sqrt{2}G_{F}e^{\dag}_{L}\tilde{\sigma}^{\mu}\nu_{eL}e_{L}^{\dag}\tilde{\sigma}_{\mu}^{\dag}\nu_{eL}$ & \\
+Operator Structure: & $e^{\dag}_{L}\nu_{eL}*\nu_{eL}^{\dag}e_{L}$ & \\ \\
+&
+\begin{fmffile}{evec1}
+\begin{fmfgraph*}(50,50) 
+\fmfstraight
+\fmfleft{i1,i2}\fmfright{o1,o2}
+\fmflabel{$\nu_{e}$}{i2}
+\fmf{fermion}{i1,v1}
+\fmf{fermion}{v1,o1}
+\fmflabel{$\nu_{e}$}{o1}
+\fmf{fermion}{i2,v2}
+\fmflabel{$e^{-}$}{i1}
+\fmf{fermion}{v2,o2}
+\fmflabel{$e^{-}$}{o2}
+\fmf{zigzag,label=$W^{-}$}{v1,v2}
+\end{fmfgraph*}
+\end{fmffile}
+&
+
+&
+\begin{fmffile}{evec2}
+\begin{fmfgraph*}(50,50) 
+\fmfstraight
+\fmfleft{i1,i2}\fmfright{o1,o2}
+\fmflabel{$\nu_{e}$}{i1}
+\fmf{fermion}{i1,v1}
+\fmf{fermion}{v1,o1}
+\fmflabel{$\nu_{e}$}{o2}
+\fmf{fermion}{i2,v2}
+\fmflabel{$e^{-}$}{i2}
+\fmf{fermion}{v2,o2}
+\fmflabel{$e^{-}$}{o1}
+\fmf{zigzag,label=$W^{-}$}{v1,v2}
+\end{fmfgraph*}
+\end{fmffile}
+\\
+
+
+\end{tabular}
+\end{center}
+\caption{Here are two Feynman Diagrams and their corresponding terms in the electroweak Lagrangian density, along with the term's operator structure.}
+\label{cc}
+\end{figure}
+In \autoref{cc}, the $e$ and $\nu$ terms are bi-spinors, as discussed earlier. The electroweak Lagrangian density, $\mathscr{L}_{EW}$, contains permutations of such interaction terms for each possible tree level (two vertex) interaction that can occur via the electroweak force. Graphically, when we look at these Feynman diagrams 
+\subsubsection{Moving Particle Physics into Shower Physics}
+As we move from purely particle physics concepts into those that are applied to extensive air showers, we need to adopt a new formalism. Cosmics ray physicists studying showers, generally wrap up the particle physics aspects into various forms of inclusive cross sections, where we take a number of integral averages over quantities which are relevant to the particle physics, but less relevant to the transport of particles through the atmosphere. 
+
+As treated by Gaisser in \cite{crapp}, we start by effectively pulling apart the cross sections we can calculate or measure from particle and collider physics (respectively) into the quantity $\langle n^{(b)}_{ac}\rangle$, which is the mean number of particles of type $c$ produced in an interaction between particles of type $a$ and $b$. This is a function of the energy of the interaction between these particles, and from a deeper perspective, a function of the transverse momentum in the interaction, as well as the ratio of the energy deposited into the product to the energy of the primary particle. Such averages exist for different numbers of particles interacting to create different multiplicities of products.
+
+To begin working towards the statistical portion of extensive air showers, in the form of transport equations, we need to finish wrapping the particle physics into convenient quantities. The next step after taking cross sections and turning them into $\langle n^{(b)}_{ac}\rangle$, is to define the quantity $F_{NN}(E,E')$ as:
+$$F_{ac}(E_c,E_a)\equiv E_c \frac{dn_c(E_c,E_a)}{dE_c},$$
+which is the unit-less inclusive cross section for a particle of species $a$ to interact and produce $dn_c$ particles of species $c$ within an energy bin the size of $dE_c$ around an average energy deposited into the outgoing particle $E_c$ with incident energy $E_a$. This quantity has already been appropriately integrated over transverse momentum. These $F_{ac}$ cross sections are useful in a number of calculations, and it is here where it becomes important to introduce the concept of correlated and uncorrelated fluxes. 
+
+In the history of cosmic ray physics, people have been concerned with particles of energies where air showers are induced and observable, but also with energies where a detection method would never be able to tell whether two particles stemming from the same interaction were related in any way. The former, air showers, are considered a \textit{correlated flux}, where an observer on the ground would be able to tell that the particles they are seeing come from the same primary interaction. However, many interesting phenomena and hints of fundamental physics are contained in the interactions from particles that are not high enough energy to cause correlated fluxes. In these uncorrelated fluxes, we consider the production that a portion of a species' spectrum induces. Each interaction that produces final state observable particles is not important, it is the total spectrum that we observe on the ground that makes the observable quantity in uncorrelated fluxes.
+
+In general, we can extend the treatment covered herein from correlated fluxes to uncorrelated fluxes by invoking the spectrum weighted moment, which effectively tells you how a spectrum of particles of a particular type produce how many particles of another type. To this end, the transport equations for correlated and uncorrelated fluxes are closely related by whether or not we treat $F_{ac}(E_c,E_a)$ via it's own contribution integral in a transport equation, or if we further wrap it into a \textit{spectrum weighted moment}. These moments make what Gaisser calls ``approximation A", which is effectively that all of the relevant quantities, but in particular the unit-less inclusive cross section, do not depend on energy. This is, of course, untrue over large energy scales, but it is easily believable over the energies at which uncorrelated fluxes are relevant.
+
+The spectrum weighted moment is calculated as:
+$$ Z_{ac}=\int_0^1 (x_L)^{(\gamma-1)}F_{ac}(x_L) dx_L ,$$
+where $x_L=E_c/E_a$, is frequently used in the transport equations we are about to discuss, when extending them to uncorrelated fluxes.
+
+\subsection{Transport Equations}
+Once the particle physics has been appropriately handled, the production of particles through the atmosphere is determined by transport equations, which effectively describe the production of particles from each species to the others as a function of depth. For example, a basic transport equation which describes the production of pions from nucleons follows:
+\begeq{ \frac{d\Pi}{dX}=-\left(\frac{1}{\lambda_\pi}+\frac{1}{d_\pi}\right)\Pi+\int_0^1 \frac{\Pi(E/x_L)F_{\pi\pi}(E_\pi,E_\pi/x_L)}{\lambda_\pi(E/x_L)}\frac{dx_L}{x_L^2}+\int_0^1 \frac{N(E/x_L)F_{N\pi}(E_\pi,E_\pi/x_L)}{\lambda_\pi(E/x_L)}\frac{dx_L}{x_L^2}.\label{transport}}
+Here, we have a number of characters, but the relevant ones for an explanation of transport equations are $\Pi$, the number of pions, and $N$ the number of nucleons, along with the $F_{ac}(E_c,E_a)$ style inclusive cross sections \cite{crapp}. While this is far too simple of a model to describe what happens in UHECR air showers, it stands to illustrate how these calculations can be handled analytically or numerically. The leftmost term on the right hand side of the equation represents the two modes in which the pion would exit the shower, through either an interaction that would effectively take it out of the shower, or that the pion would decay. The middle term represents the possibility that the pion will scatter elastically (in the particle physics sense) and remain a pion, while the right term represents nucleons colliding into anything (but probably a nitrogen molecule, i.e. other nucleons) and producing a pion. 
+
+To extend this system fully, we would write a term for each particle in the shower (after we exit the LHC-level-interactions portion) which can produce pions, and then do the same for each other species of particles. In simple cases, we can compute these integrals and complete a computation of the abundance profiles of various species through the shower. In more complex cases, and perhaps in the most general case, we would apply a numerical solver to the set of differential equations to find such profiles.
+
+An example applied to uncorrelated fluxes, is the electron neutrino production spectrum as measured by the IceCube experiment \cite{atmos}.  Through this process, and the extended process for Kaons, neutrinos are produced:
+\begsp{
+\label{neuprod}
+\pi^{\pm} \rightarrow&\,\, \mu^{\pm}+\bar{\nu}_\mu / \nu_\mu \\
+ & \,\,\,\searrow \\
+&\,\,\,\,\,\,\,\,\,\,\,\mu^{\pm}\rightarrow e^{\pm}+\bar{\nu}_e/\nu_e+ \nu_\mu /\bar{\nu}_\mu\,
+} 
+for which we can write the muon production spectrum as:
+\begeq{\mathcal{P}_\nu=\frac{\epsilon_\pi}{X \cos{\theta}(1-r_\pi)}\int_{E_\nu/(1-r_\pi)}^{\infty}     \frac{\Pi(E,X)}{E}\frac{dE}{E} + \frac{\epsilon_K}{X \cos{\theta}(1-r_K)}\int_{E_\nu/(1-r_K)}^{\infty}     \frac{K(E,X)}{E}\frac{dE}{E}.    }
+The objects in this equation are analogous to those in \autoref{transport}, and after substituting in the integrals, we can use this to compute an energy spectrum using spectrum weighted moments:
+\begeq{
+\label{thespec}
+\frac{dN_\nu}{dE_\nu}=\frac{N_o(E_\nu)}{1-Z_{NN}} \left(\frac{\mathcal{A}_{\pi\nu}}{1+\mathcal{B}_{\pi \nu}\cos{\theta}E_\nu / \epsilon_\pi} +0.635 \frac{\mathcal{A}_{K\nu}}{1+\mathcal{B}_{K \nu}\cos{\theta}E_\nu / \epsilon_K} \right),         
+} 
+where,
+\begeq{
+\mathcal{A}_{i\nu}\equiv Z_{Ni}\frac{(1-r_i)^\gamma}{\gamma+1} \mbox{   and   } \mathcal{B}_{i\nu}\equiv \left(\frac{\gamma+2}{\gamma+1} \right) \left(\frac{1}{1-r_i} \right) \left(\frac{\Lambda_i-\Lambda_N}{\Lambda_i \ln(\Lambda_i/\Lambda_N)} \right).
+}
+\subsubsection{Grammage, Interaction Length and Radiation Length}
+\subsection{Atmospheric Transport and Losses}
+\subsection{Shower Parameters}%Xmax, LDF, point of first interaction
+\subsubsection{Elongation Rate}
+
+\subsection{Monte Carlo Methods: CORSIKA}
+\newpage
+\section{Detection Methods}
+\label{detectors}
+\subsection{Scintillation}
+\label{scints}
+\subsection{Water Cherenkov}
+\label{wcd}
+\subsection{Aperture and Acceptance}
+\subsubsection{Comparison of Water Cherenkov and Scintillation}
+%Scintillators and water Cherenkov detectors (WCDs) operate at the highest level in very similiar ways. The detector volume, either the water or the plastic scintillator, is connected to a PMT (for the scintillator, it is usually mated using an optical glue or grease, and for the water it is partially submerged). While scintillators don't carry the issues of water purity and PMT suspension, they are more expensive and fragile. Additionally, they are relatively two dimensional thin sheets and often require a lead layer on top to encourage pair production from the photonic portion of an incoming extensive air shower. WCDs, on the other hand, have a favorable aperture vs. zenith profile, allowing faithful detection and reconstruction of high zenith angle showers.
+%include zenith vs. aperture plots made with Sean
+\subsection{Flourescence}
+\label{fluor}
+\subsection{Direct and Ice Cherenkov}
+\subsubsection{Non-Imaging}
+\subsubsection{Imaging}%IACTs
+\subsection{Radio}
+\section{Operating Experiments}
+Here, a sampling of currently operating experiments, each of which display an important aspect of UHECR detection techniques, will be reviewed.
+\subsection{Auger}
+\label{auger}
+\subsection{TA}
+\label{ta}
+\subsubsection{Work Towards a Cross Calibration of Auger and TA}
+\subsection{TUNKA-REX}
+\subsection{Ice Cube}
+\section{Questions at the Forefront of the field}
+
+
+\chapter{Electronics and Firmware for the Auger Prime Upgrade}
+\section{Scientific Motivations for AugerPrime}
+
+\chapter{Timing Analysis of the Upgraded Engineering Array}
+\section{Timing Basics}
+\section{CWRU Time Tagging Modules}
+\subsection{TIM}
+\subsubsection{Spatial Correlation of GPS Timing Errors}
+\subsubsection{TIM@TA}
+\subsubsection{TIM@CTA}
+\subsection{AugerPrime Time Tagging module}
+
+\chapter{Correlation of UHECR arrival directions with Starburst Galaxies}
+\section{Charged Particle Astronomy}
+\subsection{SBGs and the Hillas Criterion} %see waxman 2006 paper
+\section{Magnetic Field Modeling and JF12}
+
+
+
+%heres a silly thought, what if the same positron depletion that occurs in radio detection of UHECR showers occurs in supernovae, creating a strong electric field in a region
+
+
+ 
+
+
+\begin{thebibliography}{9}
+%\bibitem{pauger}
+%L Persson (1996) Pierre Auger-A Life in the Service of Science, Acta Oncologica, 35:7, 785-787, DOI: \url{https://doi.org/10.3109/02841869609104027}
+
+\bibitem{pacini}
+N Giglietto (2011) The contribution by Domenico Pacini to the Cosmic Ray Physics, DOI: 10.1016/j.nuclphysbps.2011.03.002, \url{https://arxiv.org/abs/1101.0398v1}
+
+\bibitem{stanev}
+A Letessier-Selvon and T Stanev (2011) Ultra High Energy Cosmic Rays, Rev. Mod. Phys. 83, 907, DOI: \url{https://doi.org/10.1103/RevModPhys.83.907}
+
+\bibitem{linsley}
+J Linsley (1963) Evidence for a Primary Cosmic-Ray Particle with Energy $10^{20}$ eV, \url{https://doi.org/10.1103/PhysRevLett.10.146}
+
+\bibitem{volranch}
+J Linsley, L Scarsi (1962) Arrival Times of Air Shower Particles at Large Distances from the Axis, \url{https://doi.org/10.1103/PhysRev.128.2384}
+
+\bibitem{linspec}
+J Linsley, L Scarsi (1962) Arrival Times of Air Shower Particles at Large Distances from the Axis, \url{https://doi.org/10.1103/PhysRev.128.2384}
+
+\bibitem{enhancements}
+The Pierre Auger Collaboration (2011) The Pierre Auger Observatory V: Enhancements \url{https://arxiv.org/pdf/1107.4807.pdf}
+
+\bibitem{firstprime}
+The Pierre Auger Collaboration (2016) The Pierre Auger Observatory Upgrade - Preliminary Design Report, \url{https://arxiv.org/pdf/1604.03637.pdf} 
+
+\bibitem{dirac}
+PAM Dirac (1928) The quantum theory of the electron, Proc. R. Soc. Lond. A 1928 117 610-624, DOI: 10.1098/rspa.1928.0023, \url{http://rspa.royalsocietypublishing.org/content/117/778/610}
+
+\bibitem{positron}
+CD Anderson (1933) The Positive Electron, Phys. Rev. 43, 491, DOI: \url{https://doi.org/10.1103/PhysRev.43.491}
+
+\bibitem{muon}
+CD Anderson and SH Neddermeyer (1936) Cloud Chamber Observations of Cosmic Rays at 4300 Meters Elevation and Near Sea-Level, Phys. Rev. 50, 263, DOI: \url{https://doi.org/10.1103/PhysRev.50.263}
+
+\bibitem{firstshowers}
+P Auger, P Ehrenfest, R Maze, J Daudin, and R. A. Fréon (1939) Extensive Cosmic-Ray Showers, Rev. Mod. Phys. 11, 288, DOI: \url{https://doi.org/10.1103/RevModPhys.11.288}
+
+\bibitem{scifund1}
+AAAS (2018) Historical Trends in Federal R\&D, \url{https://www.aaas.org/programs/r-d-budget-and-policy/historical-trends-federal-rd} retrieved on Dec. 23, 2018
+
+\bibitem{pmthistory}
+BK Lubsandorzhiev (2006) On the history of photomultiplier tube invention, NIM A 567 (2006) 236?238 DOI: 10.1016/j.nima.2006.05.221
+
+\bibitem{colliderhistory1}
+PJ Bryant (1992) A Brief history and review of accelerators,  General accelerator physics, CERN-94-01 (94/01,rec.Mar.) Conference Proceedings in Jyvaeskylae: C92-09-07.1, p.1-16
+
+\bibitem{colliderhistory2}
+G Pancheri and L Bonolis (2018) The path to high-energy electron-positron colliders: from Wider\o e's betatron to Touschek's AdA and to LEP. IOP Newsletter Jan. 2018, Retrieved Dec 23. 2018
+
+\bibitem {ultraray}
+KH Kampert and AA Watson (2012) \textit{Development of Ultra High-Energy Cosmic Ray Research} in: From Ultra Rays to Astroparticles, A Historical Introduction to Astroparticle Physics. Ed. B Falkenburg and W Rhode. Springer, available through SpringerLink. DOI: \url{https://doi.org/10.1007/978-94-007-5422-5}
+
+\bibitem {ultraray_blau}
+Michael Walter (2012) \textit{From the Discovery of Radioactivity to the First Accelerator Experiments} in: From Ultra Rays to Astroparticles, A Historical Introduction to Astroparticle Physics. Ed. B Falkenburg and W Rhode. Springer, available through SpringerLink. DOI: \url{https://doi.org/10.1007/978-94-007-5422-5}
+
+\bibitem{haverah_lillicrap}
+SC Lillicrap et al 1963 Proc. Phys. Soc. 82 95
+
+\bibitem{haverah_watson} %contained in watson_cv.pdf
+M Ave, JA Hinton, RA Vazquez, AA Watson and E Zas (2000) New Constraints from Haverah Park Data on the
+Photon and Iron Fluxes of Ultra High Energy Cosmic Rays, Physical Review Letters, 85, 2244-2247
+
+\bibitem{haverah_who} %tennent
+ RM Tennent 1967 Proc. Phys. Soc. 92 622
+ 
+ \bibitem{crapp}
+ TK Gaisser (1990) Comsic Rays and Particle Physics, ISBN-13: 978-0521339315
+
+\bibitem{kamiokande}
+KS Hirata et al. (1988) Experimental Study Of The Atmospheric Neutrino Flux, Phys. Lett. B, Vol 205, num 2,3.
+
+\bibitem{agasa}
+N Chiba et al. (1992) Akeno Giant Air Shower Array (AGASA) covering 100 km$^2$ area, NIM A 311, pg. 338-349
+
+\bibitem{casamia}
+R Ong (2006) Ultra High Energy Cosmic Ray Research with CASA-MIA, Submission for Cronin Fest at University of Chicago, available at \url{http://www.astro.ucla.edu/~rene/talks/Cronin-Fest-Ong-Writeup.pdf}, retrieved Dec 27, 2018
+
+\bibitem{swordyplot}
+W Hanlon (2008) The Energy Spectrum Of Ultra High Energy Cosmic Rays Measured By The High Resolution Fly's Eye Observatory In Stereoscopic Mode. PhD Thesis, University Of Utah, available at \url{http://www.physics.utah.edu/~whanlon/thesis.pdf}
+
+\bibitem{foteini}
+F Oikonomou (2014) Constraining The Sources Of Ultra-High Energy Cosmic Rays With Multi-Messenger Data. PhD Thesis, University College London, available at \url{http://discovery.ucl.ac.uk/1450249/1/Oikonomou%20thesis%5B1%5D.pdf}.
+
+\bibitem{sean}
+S Quinn (2017) Characterizing Arrival Direction Probabilities Of Ultra High Energy Cosmic Rays With The Pierre Auger Observatory And Progress Toward An In-Situ Cross-Calibation Of Auger and Telescope Array Surface Detector Stations, PhD Thesis, Case Western Reserve University, available through \url{https://etd.ohiolink.edu/pg_10?103494478675801::NO:10:P10_ETD_SUBID:158378}.
+
+%\bibitem{stanev}
+%A Letessier-Selvon and T Stanev (2011) Ultrahigh Energy Cosmic Rays. Rev Mod Phys, Vol 83, DOI: \url{https://doi.org/10.1103/RevModPhys.83.907}.
+
+\bibitem{shocks}
+M Baring (1997) Diffusive Shock Acceleration: The Fermi Mechanism. Proc. of XXXIInd Rencontres de Moriond, "Very High Energy Phenomena in the Universe," eds. Y Giraud-Heraud and J Tran Thanh Van, (Editions Frontieres, Paris), p. 97, available at \url{https://arxiv.org/abs/astro-ph/9711177}. 
+
+\bibitem{futuregzk}
+KH Kampert for Auger Collab. (2016) Ultra-High Energy Cosmic Rays: Recent Results and Future Plans of Auger. Proceedings to the Carpathian Summer School Of Physics 2016, available at \url{https://arxiv.org/abs/1612.08188}.
+
+\bibitem{hillas}
+AM Hillas (1984) The Origin Of Ultra-High-Energy Cosmic Rays. Ann Rev Astron Astrophys, 22: 425-44, available at \url{http://adsabs.harvard.edu/abs/1984ARA%26A..22..425H}.
+
+\bibitem{tds}
+V Berezinsky (1999) Ultra High Energy Cosmic Rays. Nuc Phys B 70: 419-430, DOI: \url{https://doi.org/10.1016/S0920-5632(98)00463-0}
+
+\bibitem{shearedjets}
+M Lyutikov and R Ouyed (2007) Inductive Acceleration of UHECRs in Sheared Relativistic Jets. Proceedings of the 30th ICRC, available at \url{https://arxiv.org/abs/0709.1666}. %this paper was a massive pain in the ass to find. I mean geez, they really couldnt put a link to it? it's on the arxiv!!!!
+
+\bibitem{radioagn}
+AC Fabian (1999) Perspective: Active Galactic Nuclei. Proc Natl Acad Sci 96: 4749-4751, available at \url{https://www.ncbi.nlm.nih.gov/pmc/articles/PMC33567/}.
+
+\bibitem{waxmangrb}
+E Waxman (2006) Gamma-Ray Bursts: Potential Sources of Ultra High Energy Cosmic-Rays. Nuc Phys B 151: 46-53, DOI: \url{https://doi.org/10.1016/j.nuclphysbps.2005.07.008}.
+
+\bibitem{muraseshocks}
+K Murase, S Inoue and S Nagataki (2009) Cosmic Rays Above the Second Knee from Clusters of Galaxies and Associated High-Energy Neutrino Emission. Astrophys J 689: L105, available at \url{https://arxiv.org/abs/0805.0104}.
+
+\bibitem{muraseblazar}
+K Murase, CD Dermer, H Takami, G Migliori (2012) Blazars as Ultra-High-Energy Cosmic-Ray Sources: Implications for TeV Gamma-Ray Observations. Astrophys J 749: 63, available at \url{https://arxiv.org/abs/1107.5576}.
+
+\bibitem{sbgshocks}
+P Carral et al. (1994) The Interstellar Medium In The Starburst Regions of NGC 253 and NGC 3256. Astrophys J 423: 223-236, available at \url{http://adsabs.harvard.edu/full/1994ApJ...423..223C}.
+
+\bibitem{pulsaruhecrs}
+K Fang, K Kotera and AV Olinto (2013) Ultrahigh Energy Cosmic Ray Nuclei from Extragalactic Pulsars and the Effect of Their Galactic Counterparts. Journal of Cosmology and Astroparticle Physics 2013, available at \url{https://arxiv.org/abs/1302.4482}.
+
+\bibitem{pulsarno}
+K Fang, K Kotera, K Murase and AV Olinto (2016) Testing the Newborn Pulsar Origin of Ultrahigh Energy Cosmic Rays with EeV Neutrinos. Phys. Rev. D 92, 129901, available at \url{https://arxiv.org/abs/1311.2044}.
+
+\bibitem{anisotropy}
+The Pierre Auger Collaboration (2017) Observation of a large-scale anisotropy in the arrival directions of cosmic
+rays above 8$\times$10$^{18}$ eV. Science 357: 1266?1270, available at \url{http://science.sciencemag.org/content/357/6357/1266}.
+
+\bibitem{cottingham}
+WN Cottingham and DA Greenwood (2007) An Introduction to the Standard Model of Particle Physics. Cambridge University Press, ISBN: 978-0-521-85249-4.
+
+\bibitem{atmos}
+MG Aartsen et al. (2015) Measurement of the Atmospheric $\nu_e$ Spectrum with IceCube, arXiv:1504.03753, \url{https://arxiv.org/abs/1504.03753v3}
+
+
+
+\end{thebibliography}
+
+
+
+
+
+
+
+
+
+\end{document}
+
+
+
+
+\includegraphics[trim=4cm 8cm 4cm 8cm, clip=true, width=4 in]{./CaCt_Sols+Interp.pdf}
+
+
+
+
+
+https://phys.org/news/2013-04-schrodinger-equation.html

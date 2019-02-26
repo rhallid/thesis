@@ -1,0 +1,43 @@
+% !TEX root = ../main.tex
+
+\begingroup
+\renewcommand*{\thefootnote}{\fnsymbol{footnote}}
+\renewcommand*\footnoterule{}
+\begin{titlepage}
+\begin{onehalfspace}
+	\hypersetup{pageanchor=false}
+	%prevents odd bugs from bad page numbering
+	\null\vfil
+	\begin{center}
+		{\bfseries \large CASE WESTERN RESERVE UNIVERSITY\\
+		SCHOOL OF GRADUATE STUDIES}
+		\vfill
+		We hereby approve the dissertation of\\
+		{\bfseries \theauthor}\\[5pt]
+		candidate for the degree of {\bfseries Doctor of Philosophy}\footnote{\normalsize We also certify that written approval has been obtained for any proprietary material contained therein.}\\
+		\vfill\vfill
+		Committee Chair\\
+		{\bfseries \theadvisor}\\
+		$\,$\\
+		\rule{3 in}{1pt}\\
+		Committee Member\\
+		{\bfseries \thesecondcmemeber}\\
+		$\,$\\
+		\rule{3 in}{1pt}\\
+		Committee Member\\
+		{\bfseries \thethirdcmemeber}\\
+		$\,$\\
+		\rule{3 in}{1pt}\\
+		Committee Member\\
+		{\bfseries \theexternalcmember}\\
+		$\,$\\
+		\rule{3 in}{1pt}\\
+		\vfill\vfill
+		Date of Defense\\
+		{\bfseries \thedefensedate}\\
+		\vspace{1cm}
+	\end{center}
+	\vfil\null
+\end{onehalfspace}
+\end{titlepage}
+\endgroup

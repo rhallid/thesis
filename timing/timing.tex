@@ -1,0 +1,907 @@
+% !TEX root = ../main.tex
+
+\chapter{Timing Equipment and Analysis}
+\label{timtiming}
+Throughout this chapter, we will document a number of the HEA group timing efforts. Starting with a discussion of the hardware behind the Timing Instrumentation Module (TIM), we will walk through the various tasks that TIM was used for. We will go through the work we did on correlating timing errors of GPS as a function of spatial separation, the Auger@TA cross calibration and the new TIMPrime for the CTA pSCT (more context and motivation in \autoref{cta}).
+
+
+\section{Stability and Accuracy of Timing Systems}
+\label{stabacc}
+Before proceeding into a discussion of the timing tasks in the HEA group, we first need an overview on the topic of the stability of frequency standards and the accuracy of time-tagging devices. 
+
+The accuracy of time-tagging standards is relatively straightforward. We usually refer to a time-tagging device's accuracy or resolution, which is essentially the width of the distribution of the device's measurement of an event time, versus the known event time. For example, we could use a pulse generator with a known frequency and see if we can reconstruct the period corresponding to that frequency with our timing device. If we trust our pulse generator, we can use it to create a histogram of time differences between the known period and the measured one. The width of this distribution will give the time resolution. The minimum time resolution in a simple rising-edge-based time-tagging system is the coarse timing granularity given by the inverse of the time-tagging clock's frequency. 
+
+This can be a function of the period of the signal you try to calibrate off of, but for our purposes we will ignore this unless otherwise needed. For most of the measurements in this chapter, we will be using one second periods. This quantity can be called the ``jitter'' of a timing pulse if we reverse our measurement and look at how good the frequency standard is. Jitter, however, can be a somewhat obfuscated term and is usually used in electrical engineering to quantify how clean a fast periodic signal is (e.g. the distribution of derivatives of time differences between the rising edges of a 40Mhz square wave).
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=5.2 in]{./images/adev.pdf}
+\caption[CSAC Allen Deviation]{Allen Deviation of a number of sources from \textcite{csac}. This diagram shows the longevity of frequency standards, but does not reflect that even a cesium source will inflect up eventually if not disciplined to a bank of clocks, averaging out each other's fluctuations.}
+\label{adev}
+\end{figure}
+
+From a technical point of view, the correct quantity to look at for a frequency standard is the Allen Deviation. This is essentially the variance of the time derivative of $N_{cal}$ over an increasing window. Theoretically, all timing standards should have Allen Deviations that tend toward 0, since averaging over the frequency differences over long periods continues to make the variance smaller. In reality, however, we have to deal with the fact that a single frequency standard will always drift due to physical limitations. In this document, we will use Allen Deviation in a comparative context to make engineering decisions; a plot from the manual of a Chip Scale Atomic Clock (CSAC) that we used shows some of the aforementioned characteristics (\autoref{adev}). 
+
+In evaluating most time standards used in astrophysics, the most valuable figure is the standard deviation of the PPS. For the M12M receiver, it is given as 2 ns, which is the standard deviation of the distribution of PPS arrival times versus some better timing standard (see \autoref{gpstest}. Here at Case, this is a rubidium frequency standard.
+
+
+\section{CWRU Time Tagging Module: TIM}
+\label{tim}
+The HEA group at CWRU has a venerable history of solving timing tasks in the field and in the lab using homemade equipment. The Timing Instrumentation Module follows previous solutions, being a small, self-contained time-tagging unit, designed for high accuracy over events with a low occurence rate. Previous timing efforts in the group include finding the timing offset between the Auger FD and SD, and testing of GPS receivers for the initial Auger installation. 
+
+Given that we had to build and test firmware and software for the UUB, as documented in \autoref{electronics}, we needed a test platform. This test platform was a ZedBoard\textsuperscript{TM} which ultimately became the prototype for TIM. We applied our system to a number of tasks, which will be described in the coming sections. Before talking about applications, we will give an overview of the hardware, firmware and software of TIM.
+
+In terms of purpose, TIM is dedicated to time-tagging tasks, both synchronous and asynchronous. Functionally, TIM does three things constantly: it runs and reads out the time-tagging system in its PL, it interprets the messages sent to it from the GPS receiver, and it ties these two outputs together into a data stream that can be parsed in post or in-situ depending on a particular application's requirements.
+\begin{figure}[H]
+\centering
+\includegraphics[width=5.8 in]{./images/timint.png}
+\caption[TIM Internals Diagram]{In this labeled photo, we have the major components of the TIM system as set up for its use in the spatial correlation of GPS timing drifts (\autoref{spacor}).}
+\label{timint}
+\end{figure}
+\subsection{TIM Hardware}
+In parity with the UUB, the ZedBoard\textsuperscript{TM} serving as the hub of TIM's abilities runs off of a Zynq\textsuperscript{TM} 7Z020 chip. It runs a double core ARM Cortex A9 processor with an Artix-7 FPGA for its programmable logic device (given the acronyms PL or PLD). The ZedBoard\textsuperscript{TM} is designed by Avnet to showcase the Zynq\textsuperscript{TM}'s abilities, pinning out it's various features into banks of usable inputs and outputs, some of which are programmable. A diagram of its high level architecture is given in \autoref{zpspl}, while a longer description of the Zynq\textsuperscript{TM} itself is in \autoref{boardview}.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=5.7 in]{./images/zpspl.pdf}
+\caption[Zynq PS/PL Programmability Diagram]{This diagram, from \textcite{zbspec}, shows the components of the ZedBoard\textsuperscript{TM} and whether they are connected to the PS or PL side.}
+\label{zpspl}
+\end{figure}
+
+The ZedBoard\textsuperscript{TM} features a footprint that is small enough to allow its use in portable lightweight systems, but not so small that it is crowded to work on. It is designed for learners so care is taken in its construction to be forgiving. All inputs are designed to handle any of the Zynq\textsuperscript{TM}'s available logic levels, and banks of PMOD connectors make it compatible with standard Arduino\textsuperscript{TM} accessories. These accessories are widely available and can be used to accomplish almost any standard function, although for our purposes, we simply used the RS-232 PMOD adapter and a homemade BNC bulkhead for timing pulses. Firmware and software can be loaded onto the ZedBoard\textsuperscript{TM} via a built-in USB to JTAG converter for testing and via SD card for production versions.
+
+Accompanying the ZedBoard\textsuperscript{TM} we have a GPS receiver, a power supply, and frequently a peripheral under TIM's command, or the facilities to make TIM a peripheral under another system's command. In our test campaigns, the peripherals we used were both atomic clocks. They were the Microsemi SA.45s CSAC (\cite{csac}) and the Stanford Research Systems FS-725 Rubidium Frequency Standard (\cite{fs725spec}). A detailed description of the actual mechanisms of operation of these atomic clocks is well outside the purview of this work, but in both cases they take advantage of optical transitions, radio emission and mass spectroscopy to produce a precise frequency. Unfortunately, that does not mean they immediately know exactly when a second is; the atomic clocks still need to be trained to the GPS constellation to produce a precise PPS.
+
+The GPS receiver we used for most of our testing and other work with TIM was an i-Lotus M12M, although TIM was used to test the Synergy SSR-6Tf that will be used in AugerPrime. Both of these will be described in \autoref{receivers}. The ensemble is rounded out with a 50W power supply with 5V and 12V rails and a fused wall-power bulkhead.
+
+\subsection{TIM Firmware}
+TIM's firmware is written in much the same way as the UUBs, as described in \autoref{integration}. Unless you have a solid understanding of how FPGA firmware is written in Vivado, \autoref{integration} and its subsections should be considered a prerequisite for this section. With that said, TIM's firmware consists of two main facets: the time-tagging, which lives in the top level wrapper, and the communications which live in the block diagram level. All inputs and outputs are tied in the constraints file to PMOD connectors on the ZedBoard\textsuperscript{TM}.
+
+The basic setup is always the same: the Zynq\textsuperscript{TM} takes in signals from the GPS receiver and the time-tagging system. The variability of the multiple versions of TIM manifests in how TIM outputs its data and whether or not it needs to communicate with another peripheral. 
+\subsection{Time-Tagging PL}
+\label{ttpl}
+Looking into the details of the timing PL, we can see below the actual Verilog code which controls the time-tagging system. This corresponds to the more human readable \autoref{ttagdiag}. The Basic idea behind the time-tagging system is to have two 32-bit registers latched by pulses from `test' and `ref' inputs off of a 750Mhz counter. To put that in a different way, the time-tagging system has two register which can store values. When a pulse comes down either of the input lines, it causes the value of a counter to be read into the corresponding register and held until a signal is received from the processing side. The input lines are double synchronized, which ensures that multiple pulses will not be generated in the event of a misaligned input pulse.
+\label{ttpl}
+\begin{small}
+\begin{singlespace}
+\begin{verbatim}
+ Counter Counter1(CLK_750,regD,GRES);
+//Use LED to display that counter is working.
+ assign LED = regD[28];
+//Each of these LEDs corresponds to the latching flip-flop
+ assign LED2 = q5;
+ assign LED3 = q6;
+
+//Double synchronize REF and TEST 1PPS inputs to 750MHz clock
+ DQ1 dqff1(CLK_750,RE{}F1PPS,q1,GRES);
+ DQ1 dqff2(CLK_750,q1,q2,GRES);
+ DQ1 dqff3(CLK_750,TEST1PPS,q3,GRES);
+ DQ1 dqff4(CLK_750,q3,q4,GRES);
+
+//Set and clear the status bits when STRB is high
+// or when global reset is called.
+//q5 status bit is set when REF1PPS is latched
+//q6 status bit is set when TEST1PPS is latched
+ INVgate invert(NSTRB,STRB);
+ ANDgate REStest(CLR,NSTRB,GRES);
+ DQ2 dqff5(q2,1'b1,q5,CLR);
+ DQ2 dqff6(q4,1'b1,q6,CLR);
+
+//Continuously update registers unless status flags are high
+ Reg1 register1(CLK_750,q5,regD,RA);
+ Reg1 register2(CLK_750,q6,regD,RB);
+\end{verbatim}
+\end{singlespace}
+\end{small}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=5.8 in]{./images/timttag.png}
+\caption[TIM Time-Tagging PL]{This diagram represents the time-tagging logic shown in the code section above (\ref{ttpl}).}
+\label{ttagdiag}
+\end{figure}
+
+This time-tagging system is derived from an early version of the AugerPrime time-tagging module, with the main modification being the increased speed and the added status LEDs. In the iteration shown above, the system is optimized for precise tagging of low-rate triggers. Using only software modifications, it can be made to do synchronous time-tagging for frequency standard testing, or asynchronous time-tagging for real science event tagging. 
+\subsection{Communications PL}
+In terms of communications with the GPS receiver and any peripherals, TIM uses the same setup as the UUB: a UART Lite (\cite{lite}) for each serial line required. The UART Lite must be hard programmed with the desired baud rate and parity bit settings. The convention for these is 9600bps for GPS receivers and 57600bps for atomic clocks. In the case of the TIM unit deployed in the Telescope Array, it is operated at the maximum 115200bps rate where it is used as the main output of the system. In all other applications, the built-in USB UART of the ZedBoard\textsuperscript{TM} is used at an emulated 115200 baud rate. This chip is actually an on-board USB to Serial converter. 
+
+As mentioned before, the process of implementing the UART Lite on a Zynq\textsuperscript{TM} chip is well documented in \autoref{integration}. The full block diagram for TIM is shown below, in \autoref{timbd}. The 0th UART Lite stays connected to the GPS receiver, while the 1st UART Lite is designated for peripheral communication or system output. Internal communications with the time tagging system are accomplished through the General Purpose Input/Output (GPIO) blocks shown in \autoref{timbd}, where the 0th GPIO causes the reset of the status and data registers and corresponding flip-flops, the 1st GPIO reads the status registers and the 2nd and 3rd GPIOs read out the data registers.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=6.2 in]{./images/zbd.pdf}
+\caption[TIM PL Block Diagram]{Here we have the full block diagram for the standard use case of TIM.}
+\label{timbd}
+\end{figure}
+
+\subsection{TIM Software}
+The software for TIM can be broken down into two parts. First we will discuss the software which operates the device itself, and then we will move into the analysis package. 
+\subsubsection{TIM Operating Software}%note the fsbl has to be set to the correct serial port to boot into
+\label{opsoft}
+The software for operating TIM can be cleanly broken down into two categories corresponding to the readout of the time-tagging system and the readout of the GPS telemetry. These two tasks are implemented in C++ in a simple \textit{while(True)}. Since the critical data are held in either the UART or the timing registers until readout, we need only ensure that the software will read them out in a relatively timely manner. The interactions through software ultimately limit the event rate of the original version of TIM (see \autoref{timatcta}). The software is written for Xilinx's Standalone Operating System, a bare bones OS giving almost all control outside of very basic functions to the developer.
+
+To implement control of the time-tagging firmware, we can simply check the status register and read it out when either both flags are high for synchronous time tagging, or when one flag is high for asynchronous time-tagging. This will be discussed in explicit detail in \autoref{augeratta}. The block of code shown below accomplishes this task for synchronous time-tagging.
+\begin{small}
+\begin{singlespace}
+\label{statcheck}
+\begin{verbatim}
+if (current_status == 0x03) {
+   refin = XGpio_DiscreteRead(&refin_device, REFIN_CHANNEL); 
+   //read refin register
+   testin = XGpio_DiscreteRead(&testin_device, TESTIN_CHANNEL); 
+   // read testin register
+   print("Pair: ");
+   printf("%010lu, ", refin); // print refin value to stdio
+   printf("%010lu\n",testin); // print testin value to stdio
+   // clear status register and start over
+   XGpio_DiscreteWrite(&clrstatus_device,CLRSTATUS_CHANNEL,SET); 
+   XGpio_DiscreteWrite(&clrstatus_device,CLRSTATUS_CHANNEL,CLEAR);
+   XUartLite_Send(&acuart,buffsend_ac,sizeof(buffsend_ac));}
+\end{verbatim} 
+\end{singlespace}
+\end{small}
+From this, we can see that the software tasks of time-tagging boil down to readout and reset. To briefly explain the code itself, we have used all Xilinx driver functions to interact with the time-tagging system. These are the \textit{XGpio} commands, which come in read and write varieties. The read commands simply output the value of the register they are reading out, while the write commands set the value of the final argument into the register they are addressing. This block first reads in, then prints the data registers, and subsequently resets them with the write commands. The final \textit{XUartlite\_Send} is for polling a peripheral's status synchronously. If no peripheral is connected, this can be ignored or removed. The \textit{0x03} check represents the hexadecimal value of the status register when both latch flags are high. If we were to, for example, add channels for time-tagging, we would need to modify this block accordingly, adding readouts for the new channels and changing the status check hex code appropriately. 
+
+The GPS communications portion of the operating software is somewhat more complicated. It starts by checking if there are any new bytes in the UART to load. This occurs at the beginning of each iteration of the \textit{while(True)} loop. Then, if it finds new bytes, it copies from a temporary buffer to a message buffer. After this, it increments a counter corresponding to the write position in the message buffer, and checks to see if the `end-of-message' characters (carriage return and line feed) are in the buffer after copying. If it finds these, it then scans the message buffer for the beginning of a message. Finally, it checks if the byte before the end-of-message is the correct XOR checksum of all of the characters from the beginning of the message up to the byte before last. If this check is passed, the message is output and cut from the message buffer. The remaining characters in the message buffer are copied to the beginning and the process starts again. 
+
+If for some reason the message does not correspond to a known format, (e.g. unrecognized message type, transmission errors etc.), the contents are dumped to output in decimal format. This was chosen for debugging purposes, as it makes it easy to use an ASCII table to readout the message header. If the checksum fails, the parser continues as though it had not received an end-of-message. Upon finding a new healthy message in the buffer, it will delete all previous contents. The procedure is the same if it fills its entire message buffer without a healthy message. 
+
+In general, interfacing with atomic clocks is a simpler process than interfacing with the receiver. For the two atomic clocks we used, one needs only send a polling message and receive an ASCII string. This is done synchronously, and we do not need any complex parsing; the message can be directly printed to output. 
+
+In terms of output, all of TIM's messages are human readable, which ensures that the instrument is useful in the field without having to invoke any complex software to interpret the output. This complexity is pushed into the output parser software, to be discussed in the next section, \autoref{timanalysis}. An example of TIM's output is shown below. 
+\begin{small}
+\begin{singlespace}
+\begin{verbatim}
+Pair: 4220156538, 4220156364
+you got a Ha message. HA! 
+
+healthy message
+day: 23
+month: 7
+year: 2017
+hour: 20
+minutes: 40
+seconds: 25
+latitude: 149411101 longitude: -293785686 altitude: 20855
+number of satellites visible: 9
+tracked: 9
+satid: 2 Track: 8 Signal: 51 IODE: 178 Chanstat: 8 160
+satid: 6 Track: 8 Signal: 52 IODE: 51 Chanstat: 8 160
+satid: 12 Track: 8 Signal: 50 IODE: 56 Chanstat: 8 160
+satid: 19 Track: 8 Signal: 49 IODE: 75 Chanstat: 8 160
+satid: 17 Track: 8 Signal: 52 IODE: 47 Chanstat: 8 160
+satid: 5 Track: 8 Signal: 50 IODE: 43 Chanstat: 8 160
+satid: 25 Track: 8 Signal: 44 IODE: 22 Chanstat: 8 160
+satid: 9 Track: 8 Signal: 49 IODE: 65 Chanstat: 8 160
+satid: 23 Track: 8 Signal: 49 IODE: 35 Chanstat: 8 160
+you got a Hn message. 
+
+sawtooth: -2
+CSAC Message: 169
+\end{verbatim}
+\end{singlespace}
+\end{small}
+\normalsize
+Some of the details here are only relevant in context, but a quick examination shows that we get time and position information, as well as the counter values (after \textit{Pair:}) of the synchronous time-tag. First the time/position/status message is parsed, and then the T-RAIM message is parsed. See \autoref{messtab} for more details on the messages, and \autoref{m12mcomm} for information on the Motorola Binary protocol. 
+\subsubsection{TIM Analysis Software}
+\label{timanalysis}
+To accommodate TIM's different use cases, the analysis software is broken into three python scripts which deal with all synchronous time-tagging situations. Asynchronous time-tagging analysis software will be discussed where relevant in the coming sections. In a synchronous single TIM setup, as in \autoref{gpstest}, the parser is the only necessary software. In dual TIM situations, such as \autoref{spacor}, we will need all three pieces. These scripts are:
+\begin{itemize}
+	\item \textbf{Parser} (advanced\_parser3.py): this piece of software goes line by line through TIM's human readable output and packs the data into a .csv file and calculates the time difference between the synchronous inputs with sawtooth correction. It tags each data point with an integer representing time from an arbitrary epoch, for use in \textit{joiner.py}. If it fails to find all of the required data, it skips that second and looks for the next fresh second's worth of telemetry. The parser is used in single TIM applications such as GPS testing to produce the data set for analysis in Origin or another chosen program, and in dual TIM applications to prepare the data for joining.
+
+	\item \textbf{Joiner} (joiner.py): the joiner simply takes two parsed .csv files and matches each line in both files by epoch. This is only needed in dual TIM applications. If it cannot find a match, the line is skipped. The joiner assumes temporally sequential data points in both files.
+
+	\item \textbf{Analyzer} (small\_analyzer2.py): to finish a dual TIM analysis, we employ the analyzer, which takes the joined data files and finds time differences of the time differences on each station. It also can be configured to compare atomic clock telemetry. It uses an exact plumb line distance formula to calculate separations between two TIM stations. 
+\end{itemize}
+
+\section{Spatial Correlation of GPS Timing Errors}
+\label{spacor}
+To address concerns in Auger about the possibility of time drifts on the order of tens or possibly hundreds of nanoseconds, we set out to measure and correlate the timing errors of GPS receivers separated by varying distances. In doing so, we are probing ionospheric fluctuations, which are known to be the largest contributor to spatial and timing errors in GPS \cite{milspec}. This technique is becoming more common in recent years \cite{atmoex,raulgps} as a method of characterizing the electron content of the ionosphere. In this section, we will walk through the experimental setup and some of the leg work that was required to finalize the measurement campaign's strategy. This will include a brief discussion of how to train an atomic clock. Finally, we will discuss the results of the measurement campaign and what can be done to improve the accuracy and meaningfulness of the results.
+
+As shown in \autoref{adev}, the GPS constellation is the most accurate timing source over the long term. This is a consequence of its constant training to the US Naval Observatory's bank of Cesium atomic clocks. That said, over short time scales, GPS is less accurate since the oscillator in the receiver has a relatively low accuracy compared to the constellation it is trained off of due to its low frequency and ionospheric (and other) systematic disruptions.
+\subsection{Experimental Setup and Method}
+If our objective is to measure the timing drifts of GPS receivers, we will first need a frequency source which is more accurate and stable than the receiver on relatively short time scales; this will take the form of an atomic clock. We will then couple this to a TIM unit and use its time-tagging abilities to find the timing error of the GPS receiver. We then need to find a suitable method for testing, in particular we will need a site (or sites) and a time interval over which to test the correlations. 
+\begin{figure}[H]
+\centering
+\includegraphics[width=5.8 in]{./images/spacordiag.png}
+\caption[Spatial Correlations Diagram]{Here we have a schematic overview of the setup of our spatial correlation tests.}
+\label{spacordiag}
+\end{figure}
+In order to understand our choice of atomic clocks, we must first review the different data collection techniques we tried. The testing here can be neatly divided into three phases: (1) car-borne short term (approximately one hour) campaign, (2) car-borne medium term campaign, and (3) desktop long term campaign. Ultimately, due to the long training times required by the atomic clocks, we only took usable data from the third campaign. 
+
+For the atomic clock, we tested two models. The first was the SA.45s CSAC from Microsemi, and the second was the FS725 Rubidium Frequency Standard from Stanford Research Systems. The CSAC comes in a very small form factor, approximately one square inch, and is intended for applications where GPS may not be available. When we purchased the first CSAC from Microsemi, the company had not completely worked out all fabrication issues and was relatively straight forward, informing us of this via email. We proceeded to purchase a CSAC as the temperature range issues they were fixing would not affect our campaign. However, we found after our first attempted data taking campaign that the CSAC only stays accurate to the GPS PPS for about 15 minutes after it is no longer being directly trained. Attempts at removing this error with a linear deviation model were unsuccessful. 
+% \begin{figure}[h!]
+% \centering
+% \includegraphics[width=5.8 in]{./images/spacordiag.png}
+% \caption[Spatial Correlations Diagram]{Here we have a schematic overview of the setup of our spatial correlation tests.}
+% \label{spacordiag}
+% \end{figure}
+After testing the CSAC, we decided the small form factor was not worth the compromise in accuracy and we obtained two FS725s. These larger desktop atomic clocks feature a much lower Allen deviation than the CSACs, although they are bulky and power hungry in comparison \cite{fs725spec}. In addition to eschewing the CSAC, we also incorporated the knowledge that we cannot go for as long of a campaign if we do not somehow train the atomic clock. 
+
+As long as the time scales of the atomic clock's training process (24-72 hours) are significantly longer than the time scales of GPS fluctuations (tens of minutes or a small number of hours), we should be able to pick out fluctuations in the GPS receiver's timing even while training to the atomic clock. The long training cycle of the atomic clock is born out by preliminary testing data (i.e. if we look at the excursions of the PPS as measured by the clock, we see them settle to an average of zero over a small number of days). The atomic clock uses a simple process of seeking the correct frequency by training away the differences between its calculated PPS phase, and that of the GPS receiver. This is detailed in the user manual \cite{fs725man}.
+
+Upon testing the FS725 in a car-borne test, we quickly discovered how temperamental the clock's training can be. Since the stability depends on the temperature and magnetic field, the clock's PPS would drift upon being moved. Compounding this is the fact that we cannot maintain an accurate enough GPS fix for nanosecond timing while moving the vehicle, and the transitions from moving to setup were not smooth (i.e. moving from the car antenna to a standing antenna is disruptive). Furthermore, the setup required a fair amount of power with the FS725 and monitoring equipment, consisting of a Raspberry Pi and LCD monitor. In an attempt to keep the atomic clocks running and trained during transitions into and out of the vehicle, we `buffered' the power lines with large uninterruptible power supplies. 
+
+Since the atomic clocks were extremely sensitive to being moved around, only the final campaign was successful in taking workable data. This consisted of moving one atomic clock to new locations in the University Circle area every week and a half. The difficulty here was finding willing participants, who would let us mount this apparatus in their apartment, and finding ways to give the antenna as close to full sky coverage as possible. These participants were Case graduate and undergraduate students, and friends of the author. 
+
+To summarize, after attacking the problem of how to measure these spatial correlations multiple ways, the trial which we finally employed was a campaign of a month and a half, in which the TIM setups were moved to five different separations, four of which yielded usable results.
+%\subsubsection{Training Atomic Clocks}
+\subsection{Measurement}
+The objective of the experiment here is to measure how correlated the timing signals of two GPS units are a function of spatial correlation. To accomplish this, we will need the two `time streams' of each TIM setup, i.e. their second-by-second time differences between the GPS PPS and the atomic clock's PPS. Once obtained, we take the difference of each set of second-by-second time differences and make a histogram of it. We calculate the standard deviation of each distribution. If the noise is completely uncorrelated, then we expect standard deviation of the difference between the time streams to be the square root of the sum of the squares of the standard deviations of each time stream's distribution, i.e. the standard deviations of each time stream added in quadrature. We will call this quantity the maximum error. If there is correlation in the noise, we will see the standard deviation of the difference between the time streams to be less than the maximum error. An example of time streams being subtracted is shown in \autoref{history}
+\begin{figure}[h!]
+\centering
+\includegraphics[width=2.9 in]{./images/timestreams.png}
+\includegraphics[width=2.9 in]{./images/timehists.png}
+\caption[Time Streams Example]{Left: an example from unused engineering data of the 3 time streams we need to create a data point. In this, the tower referred to is the Ham Radio club's tower on the roof of Case's Glennan Building.}
+\label{timemeas}
+\end{figure}
+To be complete, we can also attempt to assess the amount of noise the atomic clock's training adds. The strategy for quantifying this was to train one atomic clock off of another atomic clock, trained off of the GPS constellation. The width of the Gaussian distribution of the time differences between the atomic clocks gives the training error, which was found to be 3.3ns. 
+
+In order to assess our errors, we will calculate multiple standard deviations for each site using a sliding 4 hour window. With this, we can make statistical error bars. The final products will include a plot of the standard deviation at each separation for the stations, the differenced time stream and the max error. If the max error is above the deviation of the subtracted time stream, we will consider the signals correlated. %The next product will be a plot of the standard deviation of the difference of the time streams at each separation subtracted in quadrature from the max error divided by the max error. This is intended to show how much more correlated the time streams were than if they had been random noise, and we will call it the `correlated part.' Finally, simply for suggestions sake, we will include the same plot but with an approximate value for the atomic clock's training error subtracted off of each point in quadrature. This is not to be taken as an accurate accommodation for the atomic clock's training error; this will be discussed in \autoref{futdir}.
+\subsection{Results}
+\begin{figure}[h!]
+\centering
+\includegraphics[width=5.5 in]{./images/spacor_final.pdf}
+\caption[Spatial Correlation Results]{In this plot, we have the final product of experiment on the spatial correlations of GPS timing errors. Detailed explanations of this plot are given in the previous section. The max error is the standard deviation of each TIM setup added in quadrature, while the differences are the standard deviation of the second-by-second differences in the timing errors of the two TIM stations.}
+\label{spacorres}
+\end{figure}
+In \autoref{spacorres}, we have the final results of the analysis of the timing errors. This plot shows that we can only claim spatial correlation of GPS errors out to a couple hundred meters. That said, it also does not show any serious timing drifts, which would have dramatically increased the standard deviation of the differences between the stations. There is still some possibility of a long term phase in their timing and we will discuss how to determine this in \autoref{futdir}. An interesting and unexpected observation we made was a severe thunderstorm coming in over Cleveland. This is shown in \autoref{thundertime}, where the standard deviation jumps from 6.7 ns, to 15.0 ns.
+\begin{figure}[H]
+\centering
+\includegraphics[width=5.4 in]{./images/storm.pdf}
+\caption[Effects of a Thunderstorm on GPS Timing]{Here we have a storm which came in while we were taking data. At hour 5185.5 as marked on the graph, the storm hits and the timing solution of the GPS receiver becomes erratic, increasing its standard deviation by almost a factor of 3.}
+\label{thundertime}
+\end{figure}
+\subsubsection{Future Directions}
+\label{futdir}
+If we were to undertake this experiment again, one of the following would need to be a prime focus:
+\begin{itemize}
+	\item Understanding and simulating the training algorithm of the FS725: this is certainly possible and we began working on this with an undergraduate but the project never came to fruition. The user's manual for the device explains how the training algorithm works, although some of the parameters of it are not clearly laid out. If we were to continue down the path, the author would recommend contacting Stanford Research Systems for their assistance in the simulation.
+	\item Conducting the test using kilometer long cables: instead of using two atomic clocks as the time standard, one could get away with using one atomic clock at a central location and moving two stations away while they are both connected via BNC cable. The hard work here would be characterizing the signal losses of the BNC cable (likely requiring amplification of the signal) and finding a suitable location. The Case farm administration has invited us to complete this test on their facilities. It is worth noting that the price of CCTV BNC cables is relatively low and the HEA group's homemade discriminators could deal with the pulse marring that would occur over the long distances. 
+\end{itemize}
+
+\subsection{TIM@TA}
+%at the clf, there are detectors
+%needed to time pulses
+%ported design for tim to slimtim
+%needed to invert logic
+%changed to outoput over rs232
+%made changes to allow asynchronous time tagging
+
+\label{augeratta}
+In this section, we will discuss the role of TIM in the Auger@TA effort. This work resulted in one publication and another in progress \cite{augerta1}. We will include a brief discussion of the general effort towards the cross calibration, and then a description of the timing hardware built for the effort, and some of the engineering details that had to be addressed. Scientific motivations for Auger@TA are laid out in \autoref{augertamotiv}. The TIM unit sent to TA uses a smaller footprint board and so it will be referred to as SlimTIM. 
+
+Towards cross-calibrating Auger and TA, members of our group were allowed to access the TA Central Lasing Facility, which has the necessary network connections and amenities to run a set of detector stations. In particular, the CLF can provide power and an internet connection, and is accessible by road. Additionally, there are TA detector stations located at the CLF which we used for the in-situ cross calibration. 
+
+The ideal situation to allow for a direct Auger VEM vs. TA MIP calibration, is two stations co-located as closely as possible. This would be feasible but the TA electronics, to their credit, do more of the work in the PL than the Auger electronics do. This means that they will have faster processing times and less worries about bottlenecks, but it also means you must have a skilled electrical engineer and HDL source code to make modifications to the station. Furthermore, TA blinds its data sets for a year after they are taken. This means that events cannot be read out and accessed by anyone, stifling a cross-calibration. 
+
+This problem was addressed by effectively constructing a new station utilizing TA's signal chain up to the digitizers (i.e. scintillator, PMT and preamplifier), and using custom and store bought electronics for the rest of the station. The chosen electronics include a single board computer, a PicoScope for digitization, a comparator and AND gate for triggering, and finally SlimTIM for time-tagging. 
+
+SlimTIM takes the firmware from TIM and ports it to a smaller, MicroZed\textsuperscript{TM} package. The MicroZed\textsuperscript{TM} performs essentially the same functions as a ZedBoard\textsuperscript{TM}, except most outputs are not pinned out and it therefore requires an expander board to make use of the majority of the PL I/O ports. Outside of this, the MicroZed\textsuperscript{TM} runs the exact same Zynq\textsuperscript{TM} chip as the ZedBoard\textsuperscript{TM} and is capable of the same functionality. 
+
+Ultimately, SlimTIM enabled the time-tagging which led to the MIP vs. VEM comparisons currently used by the Auger@TA working group. At this point, the device has been functioning in-situ without interruption for over 2 years. 
+\begin{figure}[H]
+\centering
+\includegraphics[width=2.7 in]{./images/slimtim1.png}
+\includegraphics[width=3.1 in]{./images/slimtim2.png}
+\caption[Auger@TA: SlimTIM]{Left: A block diagram of the custom detector deployed for Auger@TA. Right: A labeled photo of SlimTIM in the project box. Both from \textcite{sean}.}
+\label{augerta2}
+\end{figure}
+
+\subsubsection{Engineering Challenges}
+A number of the capabilities of TIM had to be modified to meet the requirements of the Auger@TA project to create SlimTIM. Fundamentally, the biggest difference is that TIM had only been used for synchronous time-tagging. Other fine points include the firmware and software port over to the MicroZed\textsuperscript{TM}, which was non-trivial, and changing the output connection from USB to RS-232. We will discuss these here in the order of firmware changes, then software changes. 
+
+To implement these changes we started with the firmware. In Vivado\textsuperscript{TM}, we can reconfigure the peripheral UART Lite to output at 115200bps, the maximum safely possible over a standard DB-9 serial RS-232 line. This will drop the amount of dead time required by both SlimTIM to send the time-tags, and the Single Board Computer (SBC), to receive them. For simplicity, we will set the standard I/O to output over this UART, thereby curbing the need to develop and debug further serial communications software. Some debugging was required after the rest of the system was developed where we ultimately found that the signals coming off of the MicroZed's\textsuperscript{TM} serial in and serial out pins from the programmable logic were outputting inverted signals. It is unclear if the inversion occurs due to some facet of PL programming, or if this is an error in the manufacture of the MicroZed\textsuperscript{TM}. What is clear, however, is that this can be fixed by putting a PL inverting gate in the serial output signal chain. Discovering this error required a number of hours of debugging and oscilloscope viewing time. 
+
+Setting the Standard I/O (frequently referred to as \textit{stdio}) seems simple, but we must keep in mind that we do not have only one effective operating system. On a standard PC, stdio is passed from the BIOS to the operating system. In an embedded system context, we do not have BIOS to handle this and other basic functions, so stdio transfer must made explicit. This can be done by opening the configuration panel for the FSBL in Xilinx SDK. Anytime we have multiple possible stdio options, we must remember to check this. In many cases, SDK seems to choose stdio for us, and it does not always make the correct choice.
+
+Finally, we need to make the software change which will allow SlimTIM to perform asynchronous time-tagging. Referring to the code block at \ref{statcheck}, we can see that the operating software for TIM checks to see if both bits of the status register are high before it is readout. To appropriately modify this, we can copy this block twice and put both copies above the original. Then, by changing the hex check to 0x01 and 0x02 on the respective blocks, cutting out the lines corresponding to the other register's readout, and leaving the reset in, we are prepared to catch all three possible cases: TESTIN goes high, REFIN goes high, and both go high (within a handful of PS clock cycles). 
+
+
+\subsection{TIM@CTA}
+\label{timatcta}%what we are learning: write the section then go back for the first paragraph and explain what you just said
+As described in \autoref{cta}, the HEA group at CWRU has been charged with developing and implementing the timing electronics and infrastructure for the pSCT in CTA. The timing work here will enable the telescope's abilities for cross-calibration, multi-messenger astronomy and searches for transients. Below we will first describe the requirements of the system, and then move into our technical solution in two parts, and finally give a status report of the progress so far. Ultimately, the efforts here will be completed without the author, but we venture to describe as much of the work here as possible.
+\subsubsection{Requirements}
+While previous work described in this document has largely pertained to timing and electronics of water Cherenkov detectors, the pSCT is a large gamma ray telescope, and so it has many operational differences but retains many technological similarities. Amongst these differences is the much higher rate of events. Since the pSCT will be working in the high GeV to mid TeV energy range \cite{ctaong},  the technical requirement given for trigger handling is 1 khz. Before this project, the fastest verified rate of TIM's time-tagging was 20 hz. We will therefore focus on the increase in event rate handling capabilities in \autoref{timprime}. The time-tagging accuracy specification for the pSCT is 1ns; however, this is for stereoscopic reconstruction amongst multiple pSCTs.
+
+The other relevant technical task is surrounding this effort is the transfer of logic pulses from the telescope's camera to the trailer where the time-tagging system will necessarily be located. All lines in and out of the telescope must be fiber optic for lightning considerations and so there is no way to accomplish the task of creating and offloading the time-tags without some sort of fiber optic transfer setup. With this in mind, Corbin Covault, Bob Sobin and myself have set out to put together both a timing pulse transfer system (\autoref{ttrans}) and a high speed time-tagging system which we will call TIMPrime (\autoref{timprime}).
+
+\subsubsection{Timing Transfer System}
+\label{ttrans}
+The Timing Transfer System (TTS within this work) will consist of a laser emitter box, called the L-Cube, coupled to a long fiber optic line that leads to the pSCT trailer (`the trailer' for brevity) \cite{lcube}. On the input end of the L-Cube, we will have a connection to the backplane of the pSCT camera, which outputs TTL pulses upon any pixel level triggers in the camera. This rate should be about 1 khz, while the L-Cube is capable of handling rates as fast as 5 khz. 
+\begin{figure}[h!]
+\centering
+\includegraphics[width=5.9 in]{./images/timatcta.png}
+\caption[CTA Timing Transfer System]{Here we have an end-to-end diagram of the TTS, in which we can see the TTL$\rightarrow$ Fiber Optic $\rightarrow$ TTL $\rightarrow$ Time-tagging structure. This diagram is courtesy of Corbin Covault, and has not yet been published.}
+\label{tts}
+\end{figure}
+On the other end of the TTS is a ThorLabs fiber optic coupling and photo-diode that we use to reconvert the optical pulse into a logic pulse to be transferred over a standard copper line. The pulse height coming out of the photo-diode is proportional to the pulse height coming in, and is not necessarily a standard logic format or shape, and so we use one of our homemade HEA lab discriminators built by Bob Sobin. This takes any pulse over threshold and outputs a 3.3V logic pulse instead. TIMPrime then times these pulses.
+
+\subsubsection{TIMPrime: Time-tagging System}
+Looking back to the time-tagging PL of TIM (\autoref{ttpl}), we note that it is intended for very accurate time-tagging of low rate event pulses. As per the requirements of the pSCT, we will need a high event rate while maintaining a fair level of accuracy. To accomplish the event rate increase, we propose to replace the TEST count register in TIM's PL with a First-In-First-Out or FIFO buffer. The Xilinx IP for this is called the \textit{AXI FIFO Generator} \cite{fifo}, and it features a number of options. 
+
+In customizing the FIFO, we first select the width to be 32 bits, to match the counter. We then can choose any practical depth for the FIFO, and so we will, somewhat arbitrarily, pick 1024 `words.' In the Xilinx parlance, `words' translate to FIFO entries and not 2 byte data types as they might be elsewhere. This depth ensures that there will still be FIFO room even if the PS takes longer than expected to receive a GPS message or readout the REF (GPS PPS) register. In terms of accuracy, we must make a small sacrifice moving from 750Mhz to 400Mhz on the counter frequency due to the requirements of the FIFO \cite{fifo}. This brings our coarse timing accuracy down from 1.3ns to 2.5ns, which does not meet the pSCT requirements but should be more than accurate enough for the activities mentioned at the beginning of the section. 
+\label{timprime}
+\begin{figure}[H]
+\centering
+\includegraphics[width=5.9 in]{./images/timprime.png}
+\caption[TIMPrime Time-Tagging PL]{In this diagram, we can see the modifications made for TIMPrime to handle the higher data rate on the right signal line. Compare to \autoref{ttagdiag}.}
+\label{timprime}
+\end{figure}
+Next, we will have to ensure that the most current counter value is always available to the FIFO. This consists of going into the top level wrapper and either changing the control bits for the TEST/trigger register, or bypassing it altogether. At this time, the goal is to have it double synchronized, so an extra register has been added for a total of two buffer clock cycles from the counter to the FIFO. Additionally, since we will need to know how full the FIFO is to appropriately read it out, we add a 10-bit GPIO, which will be the 4th in the system, to read this out. 
+
+Perhaps the largest concern, and the work that is still under way is the read and write enable logic. The ports that we are concerned with here are respectively \textit{rd\_en} and \textit{wr\_en}. To simplify the read and write enable logic, we choose a First-Word-Fall-Through (FWFT) configuration for our FIFO, which allows the FIFO to be read asynchronously without asserting a \textit{rd\_en} pulse. Without this, the FIFO has to readout synchronously and data stays hidden until it is being read. The FWFT configuration alleviates the need for precise synchronization of the FIFO data buffer and the GPIO data input. 
+
+According to the IP's manual, \textcite{fifo}, counter values will be read into the FIFO upon asserting a \textit{wr\_en} (it looks for a leading edge) and then they will move directly through to the readout registers. Upon a \textit{rd\_en} leading edge, the current readout entry will be trashed and the next sequential entry will move to be readout. In this way, we simplify the software requirements both in terms of complexity and in terms of urgency. 
+
+The software for reading out the FIFO as it stands is a simple while loop where the FIFO is readout while more than 5 entries are waiting. This abates the issue in FWFT FIFOs that their word count can be off by a handful of entries. The block which reads the REF (GPS PPS) counter register will be changed to look for 0x01, and all other components of the software will remain the same. With this configuration, we believe we can build a timing system meeting the 1 khz requirement of the pSCT.
+
+\subsubsection{Current Status}
+\textbf{SAVING THIS SECTION FOR LATER, should be short and sweet}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+%\section{GPS Receiver Selection Testing} %edit this section carefully, try to eliminate unnecessary references since the specsheet is somehow not publicly available. Or you can just make it available...
+%\label{gpstest}
+%In order to operate an observatory like Auger, precise timing synchronization is needed amongst the SD stations. This is accomplished via GPS timing boards. While the receiver for the AugerPrime upgrade, the i-Lotus M12M \cite{m12mspec}, was initially chosen before the author began working with the Auger Collaboration, the manufacturer was unable to meet the volume of our request when the time came. Accordingly, we had to test a new GPS unit, the Synergy SSR-6Tf. During testing, the manufacturer came back and informed us that they had found the needed parts. At this time we had made significant progress towards vetting the new receiver. 
+%
+%
+%\subsection{Concerns regarding the availability of the i-Lotus M12M}
+%i-Lotus is a company in Singapore that received technology from
+%Motorola who no longer manufactures GPS receivers. The i-Lotus
+%M12M~\cite{m12mspec} has been long anticipated as the selected GPS receiver for
+%the UUB. Currently, all but two UUBs within the Engineering Array
+%is operating with an i-Lotus M12M GPS receiver.
+%
+%In late 2018, a purchase order was placed to obtain all M12Ms required
+%for the Auger upgrade.  The order was placed via Synergy Systems
+%LLC, the licensed reseller for i-Lotus in the US. The
+%hope and expectation was that i-Lotus would accept the order and
+%deliver the required M12M units to CWRU where our group would begin to validate and
+%calibrate the units for eventual deployment into the upgraded
+%array. \medskip
+%
+%However, after the purchase order was placed, we were informed that
+%i-Lotus would have substantial delays of at least several months in
+%responding to our order due to an unavailability of component parts.
+%By late 2017, our options were (1) to wait at least several months
+%with the expectation that the parts shortage might improve, or (2) to
+%consider an alternative to the i-Lotus called the SSR-6Tf~\cite{ssr}.
+%
+%Since this time, we have been working with representatives from
+%Synergy Systems to consider our options and to explore and validate
+%the performance of the SSR-6Tf as a possible alternative to the M12M.
+%During the intervening months, while testing the SSR-6Tf, we
+%received updates that indicate that i-Lotus may now have components to
+%fill some or potentially all of our order for the M12Ms.  At this time, the group at
+%CWRU has completed bench tests and temperature dependence tests to
+%compare the performance and reliability of the M12M and the SSR-6Tf. Additionally, two SSR-6Tfs are installed in the field and have been operating for over 6 months without issue.
+%%Here we present our results and our recommendations.
+%
+%\subsection{Specifications:  i-Lotus M12M vs. the SSR-6Tf}%might want to add something about the UT+ here
+%
+%The SSR-6Tf is a GPS receiver specifically made for accurate timing
+%applications.  The unit is made by Synergy Systems (the same company
+%that acts as the reseller for i-Lotus in the US).  The SSR-6Tf is designed to
+%optionally operate in ``compatibility mode'' that provides nearly
+%identical functionality to that of the i-Lotus M12M with comparable or
+%better timing performance.  In compatibility mode, the SSR-6Tf is
+%designed to function as a ``drop in replacement'' for the
+%M12M. 
+%
+%Both units specify operating temperatures in the range -40C to 85C.
+%The i-Lotus draws 123 mWatts power while the SSR-6Tf draws 155 mWatts.
+%Both receivers have the same form factor, pinout and antenna
+%connectors.
+%
+%By definition, timing accuracy here relates to the accuracy of timing for
+%1 Pulse-Per-Second (1PPS) output pulses. For every measurement reported
+%here, we apply granularity corrections (so-called `sawtooth', as explained in \autoref{sawtooth})
+%which are reported for each 1PPS pulse via internal serial line from the GPS
+%receiver.
+%
+%\subsection{Initial Bench Tests:  Absolute GPS Timing}
+%
+%Our first tests were conducted on the bench.  GPS antenna signals were routed into the
+%laboratory from a roof-top antenna.  Both the SSR-6Tf and the M12M have been exercised
+%for many 100's of hour in our laboratory without fault.
+%
+%We find that the SSR-6Tf as delivered by Synergy cold starts into
+%Motorola compatibility mode.  For both cold and warm starts, the
+%SSR-6Tf is much faster than the M12M (usually seconds vs.~minutes).
+%
+%\subsubsection{Test stand for absolution GPS timing} 
+%
+%% \figin{Bench test schematic of time-tagging system to measure absolute
+%%   timing of the Synergy Systems SSR-6Tf vs.~the i-Lotus M12M GPS
+%%   receivers.}{fig_absolute_rob.png}{3.5in}
+%\label{timprime}
+%\begin{figure}[h!]
+%\centering
+%\includegraphics[width=4 in]{./images/fig_absolute_rob.png}
+%\caption[Absolute Timing Test Diagram]{Bench test schematic of time-tagging system to measure absolute timing of the Synergy Systems SSR-6Tf vs.~the i-Lotus M12M GPS receivers.}
+%\label{fig_absolute}
+%\end{figure}
+%For our initial tests, we compare absolute time-tagging performance of
+%the SSR-6Tf against that of the M12M over a range of time-scales using
+%a GPS-disciplined Atomic Clock.  Before each test, the atomic clock is
+%trained for several hours to the GPS constellation's timing. The clock
+%we are using is a FS725 Rubidium frequency standard from Stanford
+%Research Systems, which is trained (disciplined) by the GPS.
+%Individual 1PPS produced by the disciplined FS725 provide an accurate
+%time standard to better than a few 100s of picoseconds over timescales
+%from seconds to days.
+%
+%Figure~\ref{fig_absolute} shows a schematic diagram for the
+%function of the test stand.  Our bench test timing test stand, TIM, is based
+%on a ZedBoard\textsuperscript{TM} and running our own 750~Mhz time-tagging system firmware
+%through a GPIO interface.  Operation of the board is controlled by a
+%Standalone linux operating system script. This script
+%controls the time tagging system firmware, data logging, and serial
+%communications with both the GPS and the atomic clock.  On a
+%pulse-by-pulse basis we measure the timing differences between the
+%1PPS atomic clock and the corrected 1PPS from each receiver.  The
+%final result will be a plot of the standard deviation of the arrival
+%times as a function of timing window scanned over to calculate the
+%variance. The derivative of this is directly related to the Allen
+%Deviation. 
+%
+%
+%
+%% \figin{Absolute time-tagging: The standard deviation of each
+%%   receiver's 1PPS compared to the 1PPS of the FS725 atomic clock.  The
+%%   i-Lotus M12M is shown in red.  The Synergy Systems SSR-6Tf is shown in
+%%   blue.  The shaded areas correspond to a 1-$\sigma$ error region for
+%%   each receiver.}{m12m_vs_ssr.pdf}{6in}
+%
+%\subsubsection{Results for absolute GPS timing} 
+%\begin{figure}[H]
+%\centering
+%\includegraphics[width=5.8 in]{./images/m12m_vs_ssr.pdf}
+%\caption[Absolute Timing Test Results]{Absolute time-tagging: The standard deviation of each
+%  receiver's 1PPS compared to the 1PPS of the FS725 atomic clock.  The
+%  i-Lotus M12M is shown in red.  The Synergy Systems SSR-6Tf is shown in
+%  blue.  The shaded areas correspond to a 1-$\sigma$ error region for
+%  each receiver.}
+%\label{absolute}
+%\end{figure}
+%Figure \ref{m12m_vs_ssr.pdf} shows our results for absolute
+%time-tagging of sawtooth-corrected 1PPS GPS timing for for the M12M
+%vs. the SSR-6Tf. We show the RMS difference between the measured 1PPS
+%for each receiver vs.~ the atomic clock standard as measured on
+%timescales ranging from a few seconds to 24 hours.
+%
+%In terms of short-term timing accuracy (timescales less than a few
+%minutes), the SSR-6Tf reports a timing accuracy 2.3~ns while the M12M
+%reports a timing accuracy of 2.8~ns.  Absolute timing errors gradually
+%increase for both receivers over timescales of a few hours,
+%presumably due to drifts in the electron content of the ionosphere. Over many hours, the long-term absolute
+%timing resolution of the SSR-6Tf is generally better than about 5
+%nanoseconds while the M12M is closer to 6 nanoseconds. We
+%  find that on any time-scale from seconds to hours, the SSR-6Tf
+%  outperforms the M12M by approximately one nanosecond for absolute
+%  timing accuracy.  We note that in terms of performance
+%specifications required for the the AugerPrime upgrade (e.g., better
+%than 8 nanoseconds absolute timing) both the SSR-6Tf and the i-Lotus M12M meet the
+%required specification.
+%
+%\subsection{Relative GPS Time-Tagging}
+%
+%Although absolute timing accuracy is an important performance
+%parameter for GPS time-tagging, in the field at Auger, the {\em
+%  relative timing} between two receivers is the more important
+%quantity, since only timing differences between receivers will impact
+%the reconstruction.  To verify relative timing accuracy, we developed
+%a second test stand configured to accept telemetry data from two GPS
+%units and to compute the difference in arrival times of their
+%(sawtooth corrected) 1PPS time signals. We also use this configuration
+%to explore possible temperature dependence of the arrival time of the
+%1PPS on the order of nanoseconds. 
+%
+%
+%\subsubsection{Test stand for relative GPS timing and temperature dependence} 
+%
+%
+%% \figin{Bench test schematic of time-tagging system to measure relative
+%%   timing of the Synergy Systems SSR-6Tf vs.~the i-Lotus M12M GPS
+%%   receivers, including temperature dependence.}{fig_relative_rob.png}{3.5in} 
+%\begin{figure}[H]
+%\centering
+%\includegraphics[width=4 in]{./images/fig_relative_rob.png}
+%\caption[Relative Timing Test Diagram]{Bench test schematic of time-tagging system to measure relative timing of the Synergy Systems SSR-6Tf vs.~the i-Lotus M12M GPS receivers, including temperature dependence.}
+%\label{fig_relative}
+%\end{figure}
+%
+%Figure~\ref{fig_relative} shows the schematic setup of our test
+%for relative timing and temperature dependences.  The configuration
+%closely matched to that used for previous time-tagging calibration and
+%temperature dependence measurements conducted and reported by the
+%CWRU group~\cite{brandt}. For relative GPS time-tagging we select two GPS
+%receivers of the same model and then measure the relative arrivals of their sawtooth-corrected times for 1PPS. These measurements
+%provide a series of time differences from which timing resolution
+%(standard deviation) can be computed over long-duration tests.
+%
+%From previous results using a 250~MHz version of this system, the
+%results of the temperature and relative timing tests are available in
+%the linked document and will be cited below. 
+%
+%
+%\subsubsection{Temperature and Relative Timing Test} %check july collaboration report for more testing on the M12M
+%\begin{figure}[H]
+%\centering
+%\includegraphics[width=5.5 in]{./images/ssrtest0.pdf}
+%\includegraphics[width=5.5 in]{./images/const_temp_histo.pdf}
+%\caption[SSR-6Tf Relative Timing]{Top: A time series test of the SSR-6Tf's performance with sawtooth correction measured against another sawtooth corrected SSR-6Tf. The data has been corrected for counter and sawtooth rollover errors. Bottom: A histogram of the time series.}
+%\label{ssrtest0}
+%\end{figure}
+%In comparison to the $\sim$4.4ns standard deviation in the time differences of the
+%M12Ms, the SSR has a standard deviation of 1.3 ns, which is the
+%instrumental uncertainty of the 750 Mhz time-tagging system used for
+%this testing \cite{brandt}. It is worth noting that it's possible the
+%SSR-6Tf has an even better timing accuracy, but it has reached the
+%ability of our test bench to time-tag it. The data have been filtered
+%for counter rollover and sawtooth rollover outliers which account for
+%less that 1\% of the second by second time differences recorded.
+%
+%
+%For the temperature dependence testing, the profile of temperatures is
+%derived from a study of the weather at the Auger site \cite{brandt}. The M12M shows
+%some temperature dependence during extreme temperature ramps, but the
+%mean of its 1PPS arrival time does not depend on temperature, whereas
+%SSR-6Tf does show direct dependence on the temperature. In spite of
+%this, the performance of the SSR is still better than that of the M12M
+%when put under thermal stress.
+%
+%% \figindos{Left: A time series test of the SSR-6Tf's performance with sawtooth
+%%   correction measured against another sawtooth corrected SSR-6Tf. The
+%%   data has been corrected for counter and sawtooth rollover
+%%   errors. Right: A histogram of the time series.}{ssrtest0.png}{3in}{const_temp_histo.pdf}{3 in}
+%\begin{figure}[H]
+%\centering
+%\includegraphics[width=2.9 in]{./images/ssrtest0.pdf}
+%\includegraphics[width=2.9 in]{./images/const_temp_histo.pdf}
+%\caption[SSR-6Tf Relative Timing]{Top: A time series test of the SSR-6Tf's performance with sawtooth correction measured against another sawtooth corrected SSR-6Tf. The data has been corrected for counter and sawtooth rollover errors. Bottom: A histogram of the time series.}
+%\label{ssrtest0}
+%\end{figure}
+%
+%% \figindos{Two runs from the temperature testing of the
+%%   SSR-6Tf.}{ssrtest1.png}{5in}{ssrtest2.png}{5in}
+%
+%\begin{figure}[H]
+%\centering
+%\includegraphics[width=2.9 in]{./images/ssrtest1.pdf}
+%\includegraphics[width=2.9 in]{./images/ssrtest2.pdf}
+%\caption[SSR-6Tf Temperature Testing]{Two runs from the temperature testing of the
+%  SSR-6Tf.}
+%\label{ssrtemptest}
+%\end{figure}
+%
+%
+%% \figindos{Plots from Dan Brandt's original analysis of the M12M's
+%%   temperature dependence.}{brandt_test1.png}{5.5
+%%   in}{brandt_test2.png}{5.5in}
+%\begin{figure}[H]
+%\centering
+%\includegraphics[width=2.9 in]{./images/brandt_test1.png}
+%\includegraphics[width=2.9 in]{./images/brandt_test2.png}
+%\caption[M12M Temperature Testing]{Plots from Dan Brandt's original analysis of the M12M's
+%  temperature dependence, available in \textcite{brandt}.}
+%\label{m12mtemptest}
+%\end{figure}
+%%\begin{figure}[H]
+%%\centering
+%%\includegraphics[width=5.5 in]{./images/ssrtest0.pdf}
+%%\includegraphics[width=5.5 in]{./images/const_temp_histo.pdf}
+%%\caption[SSR-6Tf Relative Timing]{Top: A time series test of the SSR-6Tf's performance with sawtooth correction measured against another sawtooth corrected SSR-6Tf. The data has been corrected for counter and sawtooth rollover errors. Bottom: A histogram of the time series.}
+%%\label{ssrtest0}
+%%\end{figure}
+%%
+%% \figindos{Two runs from the temperature testing of the
+%%   SSR-6Tf.}{ssrtest1.png}{5in}{ssrtest2.png}{5in}
+%%
+%%\begin{figure}[H]
+%%\centering
+%%\includegraphics[width=5.5 in]{./images/ssrtest1.pdf}
+%%\includegraphics[width=5.5 in]{./images/ssrtest2.pdf}
+%%\caption[SSR-6Tf Temperature Testing]{Two runs from the temperature testing of the
+%%  SSR-6Tf.}
+%%\label{ssrtemptest}
+%%\end{figure}
+%%
+%%
+%% \figindos{Plots from Dan Brandt's original analysis of the M12M's
+%%   temperature dependence.}{brandt_test1.png}{5.5
+%%   in}{brandt_test2.png}{5.5in}
+%%\begin{figure}[H]
+%%\centering
+%%\includegraphics[width=5.5 in]{./images/brandt_test1.png}
+%%\includegraphics[width=5.5 in]{./images/brandt_test2.png}
+%%\caption[M12M Temperature Testing]{Plots from Dan Brandt's original analysis of the M12M's
+%%  temperature dependence, available in \textcite{brandt}.}
+%%\label{m12mtemptest}
+%%\end{figure}
+%
+%\subsection{Conclusions}
+%We have tested the M12M and SSR-6Tf receivers using two different
+%methods, first looking at the absolute timing accuracy over different
+%time scales and second looking at the timing of each receiver relative
+%to another receiver of the same model under temperature variation. The
+%absolute accuracy test shows that, while both models perform
+%satisfactorily for use in Auger, the SSR-6Tf has slightly better
+%performance over all time scales. According to our relative timing
+%tests, the SSR-6Tf outperforms the M12M rather dramatically; where the
+%M12M has a standard deviation in time differences of $\sim$4.4 ns, the
+%SSR has a relative timing accuracy of $\sim$1.3 ns or better. The
+%temperature dependence testing showed that M12M receivers have a
+%temperature dependence during large temperature changes but stabilize
+%when the temperature does. On the other hand, the SSR-6Tf shows a
+%direct temperature dependence where the mean of the time differences
+%depends on the temperature. If the SSR was less accurate, this could
+%cause issues, but even with this direct dependence the SSR is more
+%accurate than the M12M.
+%
+%All things considered, the SSR-6Tf is a newer receiver which
+%outperforms the M12M in all relevant parameters. Pending testing in
+%the field over the next few weeks, our recommendation for the Auger
+%Prime upgrade is to purchase the SSR-6Tf receivers when Synergy is
+%ready to deliver their final version.
+%
+%
+%\section{AugerPrime Time-Resolution} %tres1 is the original time resolution reference
+%\label{money}%add tres1 to bibtex
+%An essential parameter of reconstruction for Auger is the time resolution of its detectors. This affects directional reconstruction amongst other observables, and if the time-resolution is low enough it may contribute to helping determine the muonic composition of incident air showers \cite{mupart}. With the integration of AugerPrime completed, the time-tagging module has been added in a similar way to other IP (see \autoref{integration}). At this point, it has been running continuously for over two years in the engineering array without issue, thereby confirming its reliability. This then leaves us to confirm the timing performance of the whole system, end-to-end. 
+%
+%In this section, we will first outline the basic facets of the time-tagging system. We will then move on to a discussion of each of two methods to measure the time resolution of the upgraded stations and their results. First we will discuss a method using only air showers, and then a method using a synchronization cable. Finally, we will compare the results of these two tests and their uncertainties. 
+%
+%The timing tests will be performed in the stations Trak Jr., Clais Jr. and Peteroa Jr., which have been dubbed the `timing triplet' and are some of the engineering array stations most frequently used for UUB verification and testing. A map of their positions is shown in \autoref{eamap}
+%\begin{figure}[H]
+%\centering
+%\includegraphics[width=5.5 in]{./images/eamap.pdf}
+%\caption[Timing Triplet Map]{Here we have a map of the relative positions of the stations in the EA. The distance between  Trak Jr. and Clais Jr. is $\sim$20m and the distance between Trak Jr. and Peteroa Jr. is 11m (this is somewhat obscured since we have used the global Auger coordinate system on these axes).}
+%\label{eamap}
+%\end{figure}
+%
+%\subsection{Time-Tagging Specifications and Ports} %check and decide how much of this stuff you want in here, including the tables
+%In comparison to the time-tagging module for TIM, shown in \autoref{ttagdiag}, the final time-tagging module for AugerPrime integrates all of the GPIO connections into internal wires and registers and makes some of the calculations that are done in post-processing for TIM. This change is a result of the SDEU meeting held at Michigan Technological University in October of 2014, where a new specification for the system was written, eschewing the individual GPIO connections for a more efficient structure of internal connections and a single AXI connection to communicate with the PS. Through this connection, Direct Memory Addressing (DMA) is done to present the modules outputs directly into the memory of the processing system. This puts the burden of transferring data on the PL which will handle it constantly and without extra overhead. The PS then has direct access to this information when forming T3 packets and taking care of housekeeping tasks.
+%
+%The block diagram and AXI I/O of the time-tagging module are shown in \autoref{ttagspec}. The block diagram inputs and outputs interface to other parts of the PL or UUB, while the AXI I/O provides the means to communicate the relevant information to the PS. There are effectively three types of timing going on in the module. The first, the `fast' time tagging line is meant for showers, the `slow` time-tagging line is meant for muons and there is a final line with a much simpler signal chain and register structure for the GPS calibration. 
+%
+%Each of the muon and shower lines have four registers fed by counter values from the 120Mhz clock and four registers (one tied to each of the 120Mhz clock registers) which contain the GPS second. These are multiplexed to decrease dead time, i.e. when one is full, a register containing the next writable register's address is incremented, and then when a new event comes in we repeat the process, writing the new events time-tag into the new register and again incrementing the address register appropriately. These, and all other AXI-connected registers are 32-bits wide. 
+%
+%%\begin{table}
+%%\begin{center}
+%%
+%%\begin{tabular}{c c}
+%%USER TIME TAGGING PORTS& DESCRIPTION \\
+%%clk\_120m & 120MHz clock, formerly 100MHz clock in AN\\
+%%pps gps & 1 pulse per second \\
+%%evtcnt &[3:0] tag from trigger memory for shower buffer \\
+%%evtcntm &[3:0]  tag from trigger memory for muon buffer \\
+%%evtclkf  &fast trigger\\
+%%evtclks  &slow trigger\\
+%%dead& dead time \\
+%%address\_wsb& [1:0] shower buffer write address \\
+%%address\_rsb& [1:0] shower buffer read address\\
+%%address\_wmb& [1:0] muon buffer write address \\
+%%address\_rmb& [1:0] muon buffer read address \\
+%%\end{tabular}
+%%%\begin{tiny}
+%%%\begin{tabular}{c c c}
+%%%AXI REGISTER NAME&ADDRESS OFFSET& DESCRIPTION \\
+%%%Onanosec&0 &value of nanosecond (fast) counter at time of fast trigger \\
+%%%Oseconds&1 &value of seconds counter at time of fast trigger \\
+%%%c120mout\_sb&2& value of nanosec. counter at last pps occurrence and fast trigger \\
+%%%c120calout\_sb&3&value of calibration counter at last pps occurrence and fast trigger \\
+%%%slowtriggerns&4&value of nanosecond counter at time of slow trigger \\
+%%%slowtriggersec&5&value of seconds counter at time of slow trigger \\
+%%%c120mout\_mb&6&value of nanosec.  counter at last pps occurrence and slow trigger \\
+%%%c120calout\_mb&7&value of cal. counter at last pps occurrence and slow trigger \\
+%%%timeseconds&8&value of seconds  counter at last pps occurrence when read by ps \\
+%%%c120mout\_ps&9&value of nanosec counter at last pps occurrence when read by ps \\
+%%%c120calout\_ps&10&value of cal counter at last pps occurrence when read by ps \\
+%%%c120deadout&11&value of dead counter at last pps occurrence when read by ps \\
+%%%teststatus&12&value of event status bits for test purposes only \\
+%%%ttagctrl&13&control register contains time tag soft reset control bit \\
+%%%ttagid&14&reads back the binary ascii value of the letters ?ttag? \\
+%%%spare&15&write and read any value \\
+%%%\end{tabular}
+%%%\end{tiny}
+%%\end{center}
+%%\caption[Table of Register Assignments]{These tables, reproduced from \textcite{bobttag}, show the register assignments for the AugerPrime Time-Tagging module.}
+%%\label{ttagreg}
+%%\end{table}
+%
+%\subsection{Coincident Showers Method}
+%When Auger was initially commissioned, the timing resolution of the stations was determined via a coincident shower method. This method was not detailed in any publication, but its results are briefly discussed in \textcite{tres1}. The basic method that they use is to calculate a Gaussian uncertainty quantifying the delay between stations from the arrival directions of low energy showers. They then take the coincident time-tags within a physically reasonable window, find their width by fitting a Gaussian to it, and then they subtract off the error from the arrival directions in quadrature. 
+%
+%We will use this same method to analyze coincident time-tags between Trak Jr. and Peteroa Jr. In general, we pick a month's worth of data. We cut out time-tags outside of 150ns difference; this range allows us to ensure that there are not a large amount of unphysical outliers in the coincident showers. After this, we fit a Gaussian to the distribution and take its standard deviation as the uncorrected time-resolution. We will evaluate the time differences according to the formula shown in \autoref{insec2}.
+%
+%To form the uncertainty from the time delay between stations, we can take the commonly found derivation of the distance from a point to a plane and use it to calculate the distance the shower plane must travel after it has hit one station to be seen by the other station. We can use spherical coordinates to describe the arrival direction of the shower and load this data directly from Auger's \textit{Herald} data product. The distance the plane must travel as a function of local zenith angle $\theta$ and azimuth $\phi$ is:
+%\begeq{
+%\label{tdelay}
+%d \sin\theta \sin\phi ,
+%}
+%where $d$ is the separation between the stations we are testing. To be clear, $\theta$ is defined to be the zenith angle, i.e. 0 if the shower hits perpendicular to the atmosphere. With this established, we feed $\theta$ and $\phi$ values into \autoref{tdelay}, make a histogram of the delays and then measure its width by fitting a Gaussian to it. This distribution will be referred to as the `distance-to-detector` histogram. We then divide the fitted width by $c$ and put the resulting time delay in units of nanoseconds. To find the final time-resolution, consider the following statement of the total timing error:
+%$$
+%\sigma_{tot}=\sqrt{\sigma_{shower}^2+\sigma_{det1}^2+\sigma_{det2}^2}=\sqrt{\sigma_{shower}^2+2\sigma_{det}^2}\implies\sigma_{det}=\sqrt{\frac{\sigma_{tot}^2-\sigma_{shower}^2}{2}}.
+%$$
+%We assume only that the detectors involved in the timing analysis will have the same timing errors (they are identical). While care has been taken by the Observatory's on-site scientists to ensure the firmware version is the same between the testing stations, we can verify this by making sure the mean of the timing difference distribution is at zero. At this point we have everything we need to calculate the time resolution using coincident showers.
+%\subsubsection{Shower Selection for Arrival Directions}
+%\label{justify}
+%Ab initio, it may be advantageous for us to make some energy cuts on the showers we use to assess the error due to shower arrival directions. We make this statement here for clarity and transparency: any selection of events gives approximately the same calculated standard deviation of the distribution of time delays due to arrival directions. The directly calculated standard deviation for the selections of data corresponding to \textless 1 EeV, 1 EeV \textless $E$ \textless 20 EeV, 20 EeV \textless $E$ \textless 40 EeV and  \textgreater 40 EeV all give standard deviations with .1 ns of 18.25 ns (18.28 $\pm$ .08 ns as a measurement).  Cuts for low energy events give non-gaussian distributions, with a high center peak and heavy tails on either end. Attempts to fit a Gaussian to these fail without excessive data massaging or additional degrees of freedom in the fit. Only the highest energy bin from above has a convergent fit. 
+%
+%Looking at this, we will proceed to use the fitted standard deviation for the highest energy bin, making the assumption that this is sufficient. If we find that using this assumption delivers unphysical or disagreeing results with the synchronization cable method, we can revisit this assumption and look at methods of handling non-Gaussian noise. 
+%\subsection{Coincident Showers Results}
+%Proceeding as outlined above, we find the distribution of distances-to-detector to be 5.4$\pm$1.1 m (error from fitting) with an adjusted $r^2$ of .98, indicating an acceptable but not great fit. From this, we get a standard deviation of the time delays of 18.1$\pm$ 3.5 ns. The distribution and fit are shown in \autoref{arrdist}.
+%\begin{figure}[H]
+%\centering
+%\includegraphics[width=4.5 in]{./images/arrdist.pdf}
+%\caption[Distribution of Distances-to-Detector]{Shown here is a histogram and Gaussian fit of the distance-to-detector calculated based on \autoref{tdelay} and the energy cut discussed in \autoref{justify}.}
+%\label{arrdist}
+%\end{figure}
+%To find the distribution of time differences caused by coincident showers on the two stations, we apply the methods outlined above to data from January and February of 2018. These months are chosen arbitrarily. Their data are displayed in \autoref{fintdiffs}.
+%\begin{figure}[H]
+%\centering
+%\includegraphics[width=2.9 in]{./images/jan_time_diffs.pdf}
+%\includegraphics[width=2.9 in]{./images/feb_time_diffs.pdf}
+%\caption[Distribution of Distances-to-Detector]{Here we have the distributions of time differences between Trak Jr. and Peteroa Jr. for January and February of 2018 each fitted with a Gaussian whose standard deviation is shown in the figure. Each distribution contains $\sim$3600 data points.}
+%\label{fintdiffs}
+%\end{figure}
+%We can pick either month, their standard deviations are within uncertainties of each other. Averaging them and propagating uncertainties we get an uncorrected time resolution of 21.97 $\pm$ .36 ns. From here, we can calculate our final result with propagated uncertainties:
+%\begeq{
+%\sigma_{det}=\sqrt{\frac{21.97^2-18.08^2}{2}}=8.8\pm3.6 \mbox{ ns}.
+%}
+%\subsection{Synchronization Cable Method}%might want to check when UUBv2 was actually installed
+%Another way to measure the timing of the closely placed EA stations is to connect a cable to the trigger output of one station and bring it into one of the ADC channels of the other. This connection was made between Trak Jr. and Clais Jr. and stayed in place from early 2018 until August of that year, when the second version of the UUB was installed. The UUBv2 is currently being debugged and will soon be operational. 
+%
+%By timing the trigger in Clais Jr. and differencing it with the arrival time of the synchronization pulse (trigger out)  Clais Jr.
+%%the autoanalyzer you made has a bunch of amazing plots for this, go grab them!
+%\subsection{Synchronization Cable Results}
+%
+%\subsection{Conclusions}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+% \subsection{Relevant GPS Receivers}
+% \label{receivers}
+% % \subsection{Accuracy Testing}
+% % \subsubsection{Results}
+% % \subsection{Temperature Testing}
+% % \subsubsection{Results}
+% \subsection{Test Stands and Methods}
+% In order to test the two receivers' absolute and relative timing as well as their temperature dependence, two test stands will be used. Both configurations are based on a ZedBoard running a 750Mhz time-tagging system through a GPIO interface, controlled by a simple Standalone linux operating system script written in C++. This script controls the time tagging system and the serial communications with the GPS and Atomic Clock (AC). The AC we are using is a FS725 Rubidium frequency standard from Stanford Research Systems, which will be trained to the a GPS unit of them model being tested over the course of 48+ hours. The One-Pulse-Per-Second (1PPS) produced by the FS725 should be accurate to better than 100s of picoseconds if properly trained. This makes it a useful standard for determining the accuracy of a receiver in an absolute sense, that is to say, in an attempt to recreate a receiver's accuracy relative to the absolute timing of a GPS second. 
+
+% In the field at Auger, relative timing between two receivers is the more important quantity as only the deviations of timing between receivers will affect the reconstruction. Absolute timing as given by the GPS constellation is only important when comparing data with other collaborations for multi-messenger analyses and similar reconstructions for which accuracy in the regime of GPS timing is not necessary. Accordingly, the second test stand is configured to accept telemetry data from two GPS units and to compute the difference in arrival times of their 1PPSs. The goals of this test stand are to determine their relative timing and to search for temperature dependence of the arrival time of the 1PPS on the order of nanoseconds. 
+
+% To test the absolute timing of the receivers, we split 1PPS line out of the GPS and feed it into the 1PPS input on the AC in addition to the input on the time-tagging system. The 1PPS out of the atomic clock is then fed into the other input of the time-tagging system and we look at the standard deviation in the difference of arrival times between the AC's 1PPS and the GPS's 1PPS. Before this test can be done, we wait a sufficient amount of time for the atomic clock to train to the GPS constellation's timing. The final result will be a plot of the standard deviation of the arrival times as a function of the window we scan over to calculate the variance. The derivative of this is directly related to the Allen Deviation. 
+
+% For the temperature and relative timing test, realistic conditions have been assembled according the the work of our former undergraduate student Dan Brandt \cite{brandt}. We take two receivers of the same model and look at the arrival times of their 1PPSs at the time-tagging system. These data will be displayed in a time series and then the standard deviation of the entire data set will be computed. The two receivers to be tested are the i-Lotus M12M \cite{m12m} and the Synergy SSR-6Tf \cite{ssr}. The M12M had been chosen as the preferred receiver for the Auger Prime upgrade early in the design process, but due to a parts shortage, we have been asked to consider Synergy's replacement receiver.
+
+% As per Dan Brandt's document \cite{brandt}, the M12M has been vetted quite extensively on a 250Mhz time-tagging platform of similar design to the one described above. The results of the temperature and relative timing tests are available in the linked document and will be cited below. We have verified that the performance of the M12M as measured on the 750Mhz test stand is approximately the same as that measured by the older 250Mhz test stand. 
+
+
+
+% \section{Results}
+% \subsubsection{Absolute Timing Test}
+% \figin{The standard deviation of each receiver's 1PPS compared to the 1PPS of the FS725 atomic clock. The shaded areas correspond to a 1-$\sigma$ error region for each receiver.}{m12m_vs_ssr.pdf}{3.1 in}
+% As shown in figure \ref{m12m_vs_ssr.pdf}, we see similar performance from both the M12M and SSR-6Tf receivers. The SSR is a much newer design and it outperforms the M12M at every time scale by .5 ns to 1 ns. For the purposes of operating Auger, we only care about short term performance, and either receiver is sufficiently accurate for this purpose. 
+% \subsection{Temperature and Relative Timing Test}
+% \figin{A time series test of the SSR-6Tf's performance with sawtooth correction measured against another sawtooth corrected SSR-6Tf. The data has been corrected for counter and sawtooth rollover errors.}{ssrtest0.pdf}{3 in}
+% \figindos{Two runs from the temperature testing of the SSR-6Tf.}{ssrtest1.pdf}{3 in}{ssrtest2.pdf}{3 in}
+% In comparison to the $\sim$4.4ns standard deviation in the time differences of the M12Ms, the SSR has a standard deviation of 1.3 ns, which is the instrumental uncertainty of the 750 Mhz time-tagging system used for this testing \cite{brandt}. It is worth noting that it's possible the SSR-6Tf has an even better timing accuracy, but it has reached the ability of our test bench to time-tag it. The data have been filtered for counter rollover and sawtooth rollover outliers which account for less that 1\% of the second by second time differences recorded. 
+% For the temperature dependence testing, the profile of temperatures is derived from a study of the weather at the Auger site. The M12M shows some temperature dependence during extreme temperature ramps, but the mean of its 1PPS arrival time does not depend on temperature, whereas SSR-6Tf does show direct dependence on the temperature. In spite of this, the performance of the SSR is still better than that of the M12M when put under thermal stress. 
+% \figindos{Plots from Dan Brandt's original analysis of the M12M's temperature dependence.}{brandt_test1.png}{3 in}{brandt_test2.png}{3 in}
+% \subsection{Conclusions}
+% We have tested the M12M and SSR-6Tf receivers using two different methods, first looking at the absolute timing accuracy over different time scales and second looking at the timing of each receiver relative to another receiver of the same model under temperature variation. The absolute accuracy test shows that, while both models perform satisfactorily for use in Auger, the SSR-6Tf has slightly better performance over all time scales. According to our relative timing tests, the SSR-6Tf outperforms the M12M rather dramatically; where the M12M has a standard deviation in time differences of $\sim$4.4 ns, the SSR has a relative timing accuracy of $\sim$1.3 ns or better. The temperature dependence testing showed that M12M receivers have a temperature dependence during large temperature changes but stabilize when the temperature does. On the other hand, the SSR-6Tf shows a direct temperature dependence where the mean of the time differences depends on the temperature. If the SSR was less accurate, this could cause issues, but even with this direct dependence the SSR is more accurate than the M12M. 
+
+% All things considered, the SSR-6Tf is a newer receiver which outperforms the M12M in all relevant parameters. Pending testing in the field over the next few weeks, our recommendation for the Auger Prime upgrade is to purchase the SSR-6Tf receivers when Synergy is ready to deliver their final version.
+
+
+
+
+%\begin{tabular}{c c c c c c}
+%USER TIME TAGGING PORTS& DESCRIPTION& &REGISTER NAME&ADDRESS OFFSET& DESCRIPTION \\
+%clk\_120m & 120MHz clock, formerly 100MHz clock in AN& &Onanosec&0 &value of nanosecond (fast) counter at time of fast trigger \\
+%pps gps & 1 pulse per second& &Oseconds&1 &value of seconds counter at time of fast trigger \\
+%evtcnt &[3:0] tag from trigger memory for shower buffer& &c120mout\_sb&2& value of nanosec. counter at last pps occurrence and fast trigger \\
+%evtcntm &[3:0]  tag from trigger memory for muon buffer& &c120calout\_sb&3&value of calibration counter at last pps occurrence and fast trigger \\
+%evtclkf  &fast trigger& &slowtriggerns&4&value of nanosecond counter at time of slow trigger \\
+%evtclks  &slow trigger& &slowtriggersec&5&value of seconds counter at time of slow trigger \\
+%dead& dead time& &c120mout\_mb&6&value of nanosec.  counter at last pps occurrence and slow trigger \\
+%address\_wsb& [1:0] shower buffer write address& &c120calout\_mb&7&value of cal. counter at last pps occurrence and slow trigger \\
+%address\_rsb& [1:0] shower buffer read address& &timeseconds&8&value of seconds  counter at last pps occurrence when read by ps \\
+%address\_wmb& [1:0] muon buffer write address& &c120mout\_ps&9&value of nanosec counter at last pps occurrence when read by ps \\
+%address\_rmb& [1:0] muon buffer read address& &c120calout\_ps&10&value of cal counter at last pps occurrence when read by ps \\
+%& & &c120deadout&11&value of dead counter at last pps occurrence when read by ps \\
+%& & &teststatus&12&value of event status bits for test purposes only \\
+%& & &ttagctrl&13&control register contains time tag soft reset control bit \\
+%& & &ttagid&14&reads back the binary ascii value of the letters ?ttag? \\
+%& & &spare&15&write and read any value \\
+%\end{tabular}
+
+
+%\section{Timing Basics}
+% In order to keep time in any context, we must first start with a clock. Event back to the days of Galileo or John Harrison, clocks have been based on the simple principle of an oscillator, keeping time by `ticking' at a precise rate. In today's context, most clocks are kept by electronic oscillators with a variety of methods employed to generate the signal. In the case of the UUB, this is an Abracon ABLJO-V-120.000MHZ-T2, which uses the 3rd overtone of a quartz crystal to keep time. By modulating the voltage across this VCXO, we can control its vibrational frequency. 
+
+% The field of air shower physics usually requires its time-tagging hardware to accomplish two tasks. First, it must time the occurrence of events, which can be generalized as timing the rising edge of a logic pulse. Generally, the main task of trigger hardware and firmware is the generation of a logic pulse which corresponds to the time of the trigger, often offset by some known amount. The second task of a time-tagging module in an experiment such as Auger, is to accomplish frequency distribution, which is technical jargon for synchronizing clocks at a very fine level.
+
+% For frequency distribution, Auger uses the GPS constellation's space-borne bank of atomic clocks. Using the techniques outlined in \autoref{gps}, the GPS receiver can calculate the time of a GPS second to a handful nanoseconds accuracy. These GPS seconds are timed by the receiver's 1PPS, which comes in the form of a logic pulse. By counting the ticks of an oscillator from when a 1PPS comes in to when an event occurs, and then from the event to the next 1PPS, we can interpolate to find the point in the second when the event occurred. This process is encapsulated in \autoref{insec} below. 
+% \begeq{
+% 	\label{insec}
+% 	t_e=\frac{N_e}{N_{i+1,PPS}-N_{i,PPS}}.
+% }
+% Here, we have $N_e$, the number of counts up to an event, $N_{i,PPS}$ the counter value at the preceding PPS, and $N_{i+1,PPS}$, the counter at the current (i.e. subsequent) PPS. This gives us $t_e$, the time (in seconds) of an event within a GPS second, and then we can simply use the telemetry messages from the receiver to put together the GPS second. There is some difficulty in finding the number of leap seconds to date, but this can be requested from the receiver periodically. With these pieces of information, we can put together a full decimal time-tag of when an event occurs, allowing reconstruction of air showers and comparison with data from other experiments.
+
+% To get the highest possible accuracy in time tagging, we will need to apply the clock granularity message. This has two effects on \autoref{insec}: first, the clock granularity messages (\autoref{sawtooth}) from the proceeding and current PPS events give the information that we need to adjust how many seconds the number of calibration counts, $N_{cal}=N_{i+1,PPS}-N_{i,PPS}$, represents. The current sawtooth message then tells us how the end of second represented by the PPS needs to be shifted relative to GPS time to be correctly aligned. We address the first problem by applying a correction to $N_{cal}$, $N_{cal}'=\left(N_{i+1,PPS}-N_{i,PPS}\right)\left(1+10^{-9}(\Delta t_{curr}-\Delta t_{last})\right)$, where the $\Delta t_i$ correspond to the preceding and current saw tooth ($last$ and $curr$, respectively) in nanoseconds, as it is delivered by the receiver. The second problem is fixed by simply adding the preceding sawtooth ($\Delta t_{last}$) to the event time. This gives us a new $t_e'$ of:
+% \begeq{
+% 	\label{insec2}
+% 	t_e'=\frac{N_e}{\left(N_{i+1,PPS}-N_{i,PPS}\right)\left(1+10^{-9}(\Delta t_{curr}-\Delta t_{last})\right)}*10^9+\times\Delta t_{last}.
+% }
+% In this formulation, we've added the factor of $10^9$ to put $t_e'$ into nanoseconds, which is the usual convention for the type of timing accuracy measurements we will be doing in this work. This is in line with the framework set forth by the original group who worked on GPS verification for the initial Auger construction (documented in \textcite{firsttag}).
+
+% For final science purposes, we usually want to give event times in number of GPS seconds, including the lengthy event time which will come after the decimal. While none of the measurements and activity documented in this chapter made use of it, a good place for help determining the number of leap seconds, and incidentally the conversion between UTC and GPS time, see the LIGO webpage on the topic, \url{https://www.gw-openscience.org/gps/}.
+
+%\subsection{Scientific Motivations of Time-Tagging}%can't decide if this section should just link back to the one in the previous chapter where it is explained
+%if not, you can explain the use of multimessenger and better directionality, along with the possibility of increased muon discrimination
+
+
