@@ -1,0 +1,617 @@
+% !TEX root = ../main.tex
+
+\chapter{Electronics and Firmware for the Auger Prime Upgrade}
+\label{electronics}
+%Operating a modern air shower detector like Auger requires a large amount of computing power, both centrally for data collection, packaging and reconstruction, as well as in situ in the case of a large array. 
+We will open this chapter discussing the scientific motivations for the AugerPrime upgrade, which in turn dictate the station electronics requirements. Then, a description of the science and mathematics behind decoupling the electron and muon signals in the SD is given. Subsequently, we will have an overview of the Upgraded Unified Board (UUB) which will control the upgraded SD stations, and describe its main features. The organization of work packages for the upgrade will be discussed briefly, and any features not covered in the board overview will be discussed as individual work packages, less GPS and Timing which has its own section towards the end of the chapter. After the work packages, we will discuss the operating system of the UUB and how it was brought-up. The chapter continues into a discussion of the GPS software and hardware integration. Finally, we end on a walk-through of the boards operating system and bring up procedure, focusing on the author's documentation on the topic. %In order, this chapter will go from the outer context of this work, to the inner context and finally onto the original work.
+\section{Scientific Motivations for AugerPrime}
+Since the days of John Linsley, much of the early work in UHECR science has been motivated by measurements of spectra, and while attempts to determine the composition of cosmic ray primaries have been successful at lower energies (especially in satellite- and balloon-borne experiments, e.g. \textcite{tiger}) they have not been the primary focus of the UHECR field. However, at this point the spectrum is resolving (\autoref{swordyhigh}) and it seems that a serious leap in our ability to understand sources is presented in shower-by-shower composition measurements. Auger's Fluorescence detector already measures $X_{max}$, and therefore composition, fairly well, but by separating the muonic and hadronic component of showers, we have an opportunity to employ the entire surface detector array with its 100\% uptime in composition based measurements. This is the basis of the AugerPrime program (Prime, although stylized lower case, is an acronym for Primary Ray Identification through Muons and Electrons).
+
+In order to deconvolve the muonic and hadronic component of the shower, new hardware for the surface detector is required. Towards this end, each station in the array will be equipped with a Scintillation Surface Detector (SSD) and a radio antenna (preliminary details in \cite{dutchaera}). Each of the instruments on an upgraded SD station has a different response to the EM and muonic components of the shower, and we can exploit this to separate the muon and electron components of the shower (see \autoref{ssd} and \cite{primeuniv, univpart}). Finally, since a shower's muon content depends on the number of initial hadrons and therefore the atomic number of the primary, we can use the muon to electron ratio, $N_\mu /N_e$, to find the composition. In practice, this actually is accomplished by finding the depth of shower maximum via shower universality (\autoref{universality}\cite{univpart}). Ultimately, this is correlated with $Z$ via simulation data such as those shown and discussed in \autoref{composition}, specifically \autoref{compositionplot}.
+
+As a consequence of the ability to better determine the muon content of showers, we will be able to verify models of particles physics based on extrapolations from LHC data. In particular, the ultra high energy models that CORSIKA (\autoref{corsika}, \cite{corsika}) employs predict more muons than are observed in the SD \cite{mudef}. It is unclear if this is an issue with the muon production in the models or if it is a problem with the muon content measurement of the SD. An upgrade of the surface detectors is required to answer these questions, as well as make detailed shower-by-shower composition measurements. This upgrade takes the form of AugerPrime.
+\section{Decoupling the Shower Components: SD Composition Measurements} 
+\label{showercomp}
+%good references: primeuniv, mupart, univpart, universality, toprime, xmaxcomp
+%absolutely essential references: primepdr, matinv
+%checkout firstprime, which has a great plot of muon content versus energy versus primary
+As mentioned above, the primary goal of the AugerPrime upgrade is to determine the composition of primaries with the Surface Detector. The effective workflow here is to find the muon content of the shower, which we can relate to $X_{max}$, which can then be used to give an estimate of the primary composition \cite{primeuniv, toprime, primepdr,xmaxcomp}. Stepping into a low energy particle physics point of view, we can consider the question of how we unravel the components of a shower using the efficiencies of two different detector types. Intuitively, we should reach for a matrix inversion problem, where we somehow invoke the detection efficiencies of each detector type and use these to solve for each component of the signal, starting with the mixed signals. This is a classic linear algebra problem, and the question is how to effectively state the problem in a way that will be useful to us, which is taken care of by \textcite{matinv}. 
+\begin{center}
+\begin{figure}[H]
+\includegraphics[width=5.2 in]{./images/goodxmax.png}
+\caption[$X_{max}$ Distributions]{These plots out of \textcite{xmaxcomp} give some visually simple intuition for the width and mean of the $X_{max}$ distributions for different primaries. It should be clear from these that a concrete statement of primary composition is out of reach using this technique, but we can assign probabilities of an event's composition.}
+\label{goodxmax}
+\end{figure}
+\end{center}
+This publication (\cite{matinv}) was originally meant as a proposal for the AugerPrime new detector technology, in which the tank would be split into two parts with an extra rubber liner. The liner would have significant stopping power for the EM component of the shower, thereby effectively creating two different detectors in the same tank. This was rejected because, somewhat unintuitively, it costs much more to overhaul and refill the water in 1600 stations than it does to simply mount a scintillator on top. The electronics costs between the two plans were comparable.
+
+Ultimately, the work towards a separated tank structure produced the matrix inversion method previously mentioned, but for a different context. The framework for using this matrix inversion technique on scintillators and water Cherenkov detectors is documented in \textcite{primepdr} and the mathematics follows:
+\begeq{
+\spinor{S_{SSD}}{S_{WCD}}=\sutwo{\lambda A_{SSD}}{A_{SSD}}{\beta A_{WCD}}{A_{WCD}}\spinor{f_{EM}}{f_\mu},
+}
+where $S_i$ is each detector's respective signal, $A_i$ is each detector's respective area, $\lambda$ is the MIP/VEM/$\cos\theta$ ratio, $\beta=\cos\theta+2h/(\pi R)\sin\theta$ with $h$ and $R$ the height and radius of the WCD, respectively, and $f_i$ the flux of the respective shower component. Solving this linear algebra problem to give the fluxes is then trivial. One thing to note about this method is that we still have to put it through the statistical filter of $X_{max}$ to composition correlations. Another is that it does not depend on better timing. Ultimately, this method depends on shower universality in order to be valid, and specifically it relies on the separability of four components of the shower \cite{primepdr,univpart}:
+\begeq{
+S_{tot}=S_{em}(r,DX,E)+N_\mu^{rel}\left(S_\mu^{ref}(r,DX,E)+S^\mu_{em}\right)+\left(N_\mu^{rel}\right)^\alpha S_{em}^{low-energy}(r,DX,E)
+}
+From left to right the $S_i$ here are: the electromagnetic component, the pure muonic component, the EM component created by the muonic component and the electromagnetic component from neutral pions. The explicit dependance on $X_{max}$ here is a consequence of assuming shower universality, although the details behind this are outside the scope of this work. To drive the point home, however, it is with these techniques (universality and matrix inversion) that we can decouple this signal from muons and the signal from the EM component of a shower to give an estimation of $X_{max}$.
+\begin{center}
+\begin{figure}[H]
+\includegraphics[width=5.2 in]{./images/muonground.png}
+\caption[Muon Content vs. Primary Over Depth]{This plot, originally from \cite{primeuniv}, shows the number of muons as a function of depth and primary composition.}
+\label{muonground}
+\end{figure}
+\end{center}
+After discussing this fairly solid and relatively straightforward technique, it is necessary to mention that there \textit{should} be a better way to relate the number of muons in the shower directly to the primary composition, without relying on the statistical variability of $X_{max}$. Hints of this are shown in \autoref{muonground}, where we can see that the number of muons is only lightly dependent of $X_{max}$. A number of techniques have been looked at and successfully simulated to find the number of muons in a shower, and the better timing does help with this (\cite{mupart, primeuniv}) but a stable and accurate technique to take the observables and turn them into a measure of the primary composition has not been established. This would likely have been accomplished already if funding for AugerPrime had continued in the US.
+
+
+\section{Board Overview}
+\label{boardview}
+The Upgraded Unified Board is effectively a drop-in replacement for the Unified Board, fitting in the same electronics enclosure and connecting to the same radio, GPS antenna, power system and photomultiplier tubes. The board is powered by a Zynq\textsuperscript{TM} 7Z020 SoC/FPGA (System-on-a-Chip/Fully Programmable Gate Array), and consists effectively of three layout sections: the Zynq\textsuperscript{TM} and interfaces, the front end inputs and digitizing, and slow control. In this section we will discuss the context and general features of the UUB, paving the way for a detailed investigation of its subsystems including the GPS Integration and Board Bring-up detailed in \autoref{integration} and \autoref{bringup}, respectively.
+
+\begin{figure}[H]
+\begin{center}
+\includegraphics[width=5.8 in]{./images/uubrob.png}
+\caption[UUB Picture]{A Picture of the UUB with some of the basic parts and connections labeled.}
+\label{uubpic}
+\end{center}
+\end{figure}
+
+The Zynq\textsuperscript{TM} chip provides most of the functionality of the UUB, enclosing event encoding including trace recording, time-tagging, trigger logic, communications packet creation, housekeeping, monitoring and more.  This chip is split into two essential parts the Processing System (PS) and the Programmable Logic (PL). In the diagram in \autoref{zynqschem}, the PL is not explicitly shown because of it's undetermined nature, but what is made clear is the architecture of the PS. One potentially confusing part about this system is that there are both ``hard" and ``soft" peripherals, such as GPIOs (General Purpose Input Output) and UARTs (Universal Asynchronous Receiver/Transmitter). These devices live both in hard silicon on the processing side, where parameters of them are effectively programmable but the device itself exists whether or not you use it, and in the programmable logic, where they are completely customizable.
+
+The CPU in the processing system consists of two ARM Cortex\textsuperscript{TM} A9 cores running at 333Mhz. This effectively allows an appropriate operating system to invoke parallel processing to decrease dead time and increase reliability of the detector. An example where this is especially useful is interpreting GPS messages through the receivers rather slow baud rate. At a 9600 bits per second rate of communication, the processing system must wait for 150 or more bytes to come in, corresponding to more than a microsecond of dead time. In this situation, the second core will handle all other functions, in particular critical data handling. That said, the PL firmware is designed to save all important information, i.e. anything that is science-critical, until it is ready to be read out. Which is to say, unlike in some applications, we are not in any dire hurry to read things out. Furthermore, interrupts have been implemented in the processing system for both shower and muon triggers, and Direct Memory Addressing (DMA) is used to transfer the data from the trigger buffers to the PS with minimum processing power and maximum speed.
+
+\begin{center}
+\begin{figure}[H]
+\includegraphics[width=5.2 in]{./images/zynqschem.png}
+\caption[Zynq\textsuperscript{TM} Schematic]{A schematic of the internals of the PS in the Zynq\textsuperscript{TM} chip, from \textcite{zynq}.}
+\label{zynqschem}
+\end{figure}
+\end{center}
+
+The external features of the physical board layout are shown in \autoref{uubpic}, while the high level logical and signaling layout is shown in \autoref{uubschem}. A quick examination of \autoref{uubschem}, shows that the Zynq\textsuperscript{TM} chip is truly the the hub of all of the activity on the board, in fact even external clocks  are distributed through it. The main external external clock is the Abracon ABLJO-V-120.000MHZ-T2, a VCXO (Voltage Controlled Crystal Oscillator) whose control voltage is set by an SPI bussed DAC. This VCXO was chosen for its low jitter of .1ps, however a number of options have been discussed for future versions of the UUB. These include temperature compensated and oven compensated oscillators to deal with the relatively rapid temperature changes (see \textcite{brandt} for more about the desert temperatures). The speed of the oscillator was chosen to match the speed of the AD9628 120MS/s ADCs. 
+
+It is worth noting that this is a fundamentally different timing design scheme than the original Unified Board. In the UB, the time tagging board is external to the entire system (i.e. goes in an expansion header) and runs at 100Mhz, while the ADCs run at 40Mhz; in the UUB, time tagging and trace recording are synchronized to the same clock, both out of convenience and to reduce redundant components in the board for power concerns. In early versions of the UUB, the 120Mhz clock was to be filtered through a jitter reduction chip. Ultimately, it was decided by the timing team (the author included), initially led by Patrick Allison of OSU, that the small fractions-of-a-picosecond reduction in the frame jitter of the ADCs would not affect any science goals (note, this would affect the recorded shape and smoothness of the shower front, but not at a significant level). The chip was rather power hungry, and its removal left us with a slightly easier power budget.
+
+Signal processing-wise, the analog portion of the front end is largely ported over from the Unified Board (UB, previous control board for Auger), and is effectively designed to ensure pulse integrity from the photomultiplier tubes. Additionally, it includes amplifier electronics for each channel and an anti-aliasing filter, to ensure faithful reconstruction of relatively high frequency features. Finally, the board also has a number of power delivery features. It serves as a hub for the various voltages that need to go to its detectors and other peripherals. As a note, it is worth mentioning that the power delivery has caused some amount of engineering headaches as it can induce voltages in other lines that are routed above, below or even just nearby.
+
+\section{Subsystems and Work Packages}
+In order to divide the large amount of work that the collaboration did towards upgrading the surface detector, the effort was split into work packages. A table is provided in, with a table of participating institutions and their tasks in \autoref{wpdiag}. In the subsections under this header, we will discuss a few of the work packages that relate to the tasks completed for this dissertation. If you are looking for details on those systems not explicitly discussed here, check \autoref{boardview}, if it is not there, then we have deemed it outside the scope of this work, for example board assembly, or array simulation.
+\begin{table}[h!]
+\centering
+\includegraphics[width=5.5 in]{./images/wpdiag.png}
+\caption[Auger Prime Institutions]{A diagram of work packages and the institutions involved in them. This is from the publicly available development plan, \textcite{devplan}. It is worth noting that some institutions such as Fermilab (FNAL) and Ohio State (OSU) made important contributions early on, but were ultimately forced to pull out of the project due to funding restrictions. }
+\label{wpdiag}
+
+\end{table}
+\begin{table}[h!]
+\centering
+\begin{tabular}{|c|c|} \hline
+WP1 & Analog PMT signal processing development \\ \hline
+WP2 & Trigger development \\ \hline
+WP3 & Time tagging development \\ \hline
+WP4 & Slow Control development \\ \hline
+WP5 & UUB Hardware Design \& Integration \\ \hline
+WP6 & UUB software development \\ \hline
+WP7 & Calibration and Control tools development \\ \hline
+WP8 & Assembly, Deployment and Validation \\ \hline
+WP9 & Simulations and Science Validation \\ \hline
+WP10 & Project Management \\ \hline
+\end{tabular}
+\caption[Auger Work Packages]{A table of the different work package designations. Some of these will be discussed in the coming sections.}
+\label{wptab}
+\end{table}
+When the work packages were initially designed, the new detector type had not yet been chosen and a number of contenders were still moving forward with their research. Eventually, the decision was made to use the scintillation detector over the various other proposals, which included a small PMT to pick up saturating showers (\cite{dynrang}), splitting the tank in two for muon electron separation, and installing Resistive Plate Chambers under each station, amongst others. When the decision was made, SSD calibration and construction was added to WP1. Minutes and official documentation are publicly available \href{https://atrium.in2p3.fr/nuxeo/nxpath/default/Atrium/sections/Public/Projet%20AUGER/Test@view_documents?tabIds=%3A&conversationId=0NXMAIN1}{here}.
+%\newgeometry{left=1.5in,bottom=1in,top=1in,right=1in}
+
+%\begin{center}
+\begin{figure}[hp]
+\centering
+\includegraphics[width=6 in]{./images/lil_uub_vert.pdf}
+\caption[UUB Block Schematic]{A block schematic of the UUB, displaying the major components and their interconnections, from \textcite{tiina}.}
+\label{uubschem}
+\end{figure}
+%\end{center}
+%\restoregeometry
+%\newgeometry{left=1.5in,bottom=1in,top=1in,right=1in}
+
+\newpage
+\subsection{Scintillation Surface Detector}
+\label{ssd}
+While some details of the SSD have already been discussed in \autoref{scints}, we will review them here and provide a few more technical diagrams and pictures. The Scintillation Surface Detector is an organic extruded plastic fluorescent scintillator of about 3.8m$^2$ manufactured by Fermilab. As mentioned above, the addition of this detector should give us a handle on the muon content of the shower, in conjunction with the water Cherenkov portion of the detector. 
+
+\begin{figure}[h!]
+\begin{center}
+\includegraphics[width=2.0 in]{./images/ssdschem.png}
+\includegraphics[width=3.6 in]{./images/ssdpos.png}
+\caption[AugerPrime SSD Mount and Station Positions]{Left: A schematic of the SSD mount originally shown in \textcite{augerscint}. Right: The positions of the SSD carrying stations from \textcite{firstdat}.}
+\label{scintdiag2}
+\end{center}
+\end{figure}
+
+In the final stage of AugerPrime, each SD station will be fitted with a scintillator which sits on top of the station in a specially designed mount, pictured in \autoref{scintdiag2}. As pictured in the left panel of \autoref{scintdiag}, Wavelength Shifting Fibers (WSFs) pickup and transport the scintillation light to the photomultipliers. To determine the best choice for photomultiplier tubes, both silicon photomultipliers and photomultiplier tubes (Hamamatsu R9420) were evaluated, with the PMTs being the final choice (\cite{augerscint,firstdat}). 
+
+Each scintillator bar, of which the larger panel is comprised (48 in total), is coated with titanium oxide on the top for handling and for reflection of usable signals back into the bulk of the scintillator. on top of the panels is a corrugated steel heat pipe structure which allows air to flow, and reflects the sunlight, thereby keeping the SSD at ambient temperature. The fibers are bundled together at the center of the SSD and aggregated at the `cookie' in front of the PMT. The first SSDs were commissioned to the Engineering Array on Sept. 16, 2016.
+
+\subsection{Trigger Logic}
+In large part, the trigger logic for AugerPrime was designed by Dave Nitz of Michigan Technological University. It is implemented in the Xilinx Zynq\textsuperscript{TM} chip, on its Artix-7 FPGA, and is fed by the analog front end through the digitizers (discussed and named in \autoref{boardview}). In the early days of Auger, a number of triggers were tested, but the absolute most successful was the Time-Over-Threshold (TOT) trigger. Single bin and MoPs (Multiplicity of Positive Steps) triggers are also available. Some of the triggers also have compatibility modes, in which they are effectively downsampled to 40Mhz and the frequency response of the UB ADCs is modeled and applied to them. Since much of the work done for timing in \autoref{augtiming} and \autoref{timtiming} involves triggering or using the signal chain from the triggers, we will review the nature and functions of the triggers available on the UUB.
+
+Below, we will divide up the triggers into the Compatibility, Current and Calibration categories. The compatibility triggers allow old analysis routines to be used on the data. The current triggers are the state of the art triggers that have been developed for the UUB. These use more advanced techniques than the compatibility triggers, and take advantage of the digital signal processing capabilities of the Zynq\textsuperscript{TM}. Finally, the calibration trigger looks for single through going muons which can then be used in the charge histogram to set the VEM level (see \autoref{calib}). These descriptions and more technical information about the UUB's PL can be found in \textcite{triggers}.
+
+\noindent\textbf{Compatibility Triggers:}
+\begin{enumerate}
+\item \textbf{Compatibility Single Bin Trigger}: in parity with the triggers on the UB, this trigger operates on the downsampled ADC traces, and simply asks ``have we seen a bin greater than the set threshold?" It can be programmed with different thresholds for each PMT, and can be programmed for different coincidence multiplicity requirements via a control register. From a science perspective, this is to detect the strong signal from single through going muons and is especially effective at detecting highly inclined showers where the atmosphere has depleted the EM component of the shower.
+
+\item \textbf{Compatibility Time-Over-Threshold Trigger}: originally intended to decrease the data rate of stations by ensuring they only trigger on real showers, the TOT trigger applies a threshold to each ADC bin in a running 120 bin window. When a particular multiplicity, set in the control register, of consecutive bins are above threshold, it trips the TOT trigger, which is then elevated to a T2 event (i.e. sent to the Central Data Acquisition System, CDAS). 
+\end{enumerate}
+
+\noindent\noindent\textbf{Current Triggers:}
+\begin{enumerate}
+\item \textbf{Time-Over-Threshold, Deconvolved}: the TOTd trigger is the advanced form of the TOT trigger, employing an exponential deconvolution, which effectively amplifies the signal towards the end of a shower trace. By doing so, we can get a more accurate count of the number of bins which correspond to usable shower data, and therefore the multiplicity that we specify in the control register will more accurately reflect the length of the shower.  Besides the deconvolution, it works in effectively the same way as the shower.
+\item \textbf{Multiplicity-of-Positive-Steps}: the MoPS trigger looks for the signal in a trace to rise after each bin. Each time it rises, that number of steps is added together to form the multiplicity, and if the the trace multiplicity hits the multiplicity number set in the control register, it launches a trigger. 
+\item \textbf{Full Bandwidth Single Bin Trigger}: This is truly the same as the old compatibility single bin trigger, but at the full 120Mhz clock rate.
+\end{enumerate}
+
+\noindent\textbf{Muon Trigger}: this trigger allows the stations to trigger on uncorrelated fluxes of through going muons for calibration. In particular, it has programmable delays for comparing the signal of the SSD and WCD for MIP vs. VEM curves. 
+
+\subsubsection{Trigger Hierarchy}
+To efficiently balance the data constraints of an array as large as Auger, a hierarchy of triggers must be established \cite{ubtriggers}. At time of writing, the new triggers of the UUB have not been implemented in this hierarchy. That said, we can elucidate how the old triggers contribute. As mentioned above, the two previously implemented triggers are the TOT and the Single Bin triggers. The Single Bin (SB) trigger is meant for the short but high pulses from single through going muons, while the TOT trigger is meant for showers. The TOT trigger represents a more significant signal that will always be associated with some type of shower, whereas the SB trigger can come from showers or uncorrelated fluxes, and is therefore less trustworthy.
+
+\begin{figure}[h!]
+\begin{center}
+\includegraphics[width=5.6 in]{./images/trighier.png}
+\caption[Auger Trigger Hierarchy]{A diagram out of Abraham et al. \cite{ubtriggers}. This shows what triggers and what signal strengths lead to what rates. It also shows when events are elevated. At the CDAS level, the letters, numbers and ``\&" signs represent the geometric configuration required to invoke a T3 trigger, where $C_n$ is a detector from the $n$th circle out from the estimated shower core. See \cite{ubtriggers} for more information.}
+\label{trighier}
+\end{center}
+\end{figure}
+
+There are three levels of triggers in the SD array: T1, T2 and T3. T1 and T2 live in the station, where T1 can be either noise or a shower, but T2 is meant to represent events that are shower candidates. T1 rates are used for calibration, and do not necessarily require a coincidence amongst all three photomultiplier tubes, while T2s represent either passing a TOT trigger or passing a very high Single Bin trigger. T2s are sent to the Central Data Acquisition System (CDAS) over radio and CDAS makes a decision to elevate to T3 based on the adjacency of stations it is receiving T2s from and the time window in which it receives them. If appropriate conditions are met (represented in \autoref{trighier}), CDAS sends out a T3 ``request" and relevant stations are read out, and their trace data, along with housekeeping and calibration data, are stored.
+\subsection{Slow Control}
+When deploying autonomous detector stations over such a wide area as Auger, it is of the utmost importance to ensure that there are redundant solutions to solve as many problems as possible without physical maintenance. According, the UUB has three lines of defense: (1) Software controls, (2) Slow control and (3) Watchdog system. Many issues can be avoided by careful and clever software, but for those that can't, having a redundant Linux system on board can save many otherwise untenable situations. This is one of the primary functions of the slow control module, largely developed at the University of Wuppertal by Karl Heinz-Becker and his team. The other main functions of slow control are to monitor various voltages, the temperature and other easily measured conditions, as well as communicating with the radio, setting the PMT parameters and taking care of some of the housekeeping tasks. We discuss this here since GPS telemetry and PPSs are used by the slow control module to help monitor and save the UUB in problematic situations.
+
+To ensure the integrity of the system, the slow control module itself makes sure that the Zynq\textsuperscript{TM} chip is still running well. By communicating with it and monitoring its reference voltages, slow control can determine if operation is proceeding smoothly, or if there are issues. If there is something that needs to be addressed, the slow control can send a reset pulse to the Zynq\textsuperscript{TM} chip. It also helps manage the correct boot order of the Zynq\textsuperscript{TM}; in particular, the external block RAM must be reset on startup to ensure proper functionality. The Watchdog chip (to the left of slow control in \autoref{uubschem}), monitors the voltage parameters of both the Zynq\textsuperscript{TM} and slow control, and is programmed to send a reset pulse to either or both as a last line of defense against failure.
+\subsection{Hardware Design and Integration}
+Integrating all of the subsystems produced and creating a board layout that facilitates the necessary interconnections of each component was largely lead by the electrical engineers in Grenoble, FR at LPSC. From \autoref{wpdiag}, we can see that all teams were responsible for helping integrate their component. In effect, this meant uploading a packaged ``IP" (Intellectual Property, a Xilinx term for their block diagram inline packages) to a central github repository if you had designed custom hardware, or sending a specification of what IPs you want placed in the block digram and what they need to connect to if you are using Xilinx IPs. 
+
+Among the constraints in board layout and integration, we have layering and induction concerns, thermal and mechanical stress concerns, crowding, power and finally FPGA usage concerns. The Xilinx tool set which is provided to work on the Zynq\textsuperscript{TM} chip gives tool to manage power and FPGA concerns, while layering and induction can be simulated through SPICE or modeled in ORCAD. Mechanical and thermal stresses are simulated before board production, but in my experience working on the UUB, these things often only come out once a board has been produced. Hence, there is a pre-production run of boards ordered in projects like this, where the non-obvious issues are worked out. 
+\subsection{Software Development}
+For the UUB, much of the software could be ported from the old UB as it was largely written in C. This involves using the PetaLinux command line utilities to instantiate programs to be cross-compiled, and then checking that the port worked. While the software for the UB is rather complex, only certain components needed to be ported for mission-critical tasks. Some parts were rewritten and others were simply transferred over. This work was done by Patrick Allison of OSU and later by Ricardo Sato who works directly for Auger as our science coordinator, along with contributions from the author and others towards the software pertaining to our specific work packages, i.e. GPS communications software. 
+
+\subsection{Calibration}
+\label{calib}
+A number of calibrations must be done for AugerPrime, and as with the initial Auger detectors they must be done autonomously in situ. From a science perspective, the chief amongst these is the MIP/VEM calibrations. Since triggers are based on a station's VEM measurement, or in the SSD, the MIP measurement, a poor calibration can directly affect a station's science performance. 
+\begin{figure}[h!]
+\begin{center}
+\includegraphics[width=5.4 in]{./images/primecharge.png}
+\caption[AugerPrime Charge Histograms]{This charge histogram, from \textcite{zizhao}, shows counts from the muon trigger. }
+\label{primecharge}
+\end{center}
+\end{figure}
+The general method of finding calibrations for the SSD and WCD is to look at traces whose recording is initiated by the muon trigger. These are stored and analyzed at the station level, and used make a histogram of the charge deposited (calculated from integrating the traces). This reveals two distinct peaks. The left is the noise pedestal, which is used to find the appropriate ADC count offset. The right is the MIP/VEM peak (depending on whether you are looking at a WCD or an SSD). This is fit with a Gaussian and the center is used as the VEM value in all of the stations internal trigger calculations. Examples of the charge histograms for an upgraded station running in the EA are shown in \autoref{primecharge}. 
+
+There are other important calibrations, such as the high voltage calibration. This is done by looking at the noise level in the ADC traces and handing histograms of that off to slow control. This is a largely straightforward process which, usually goes well; when it doesn't succeed stably, it usually indicated an issue with the PMT which will have to be fixed manually. Additionally, in order to determine important parameters from deconvolving the different components of the shower, MIP vs. VEM diagrams must be made (see \autoref{showercomp} for more details). We have shown one of these in \autoref{mipvvem}. 
+\begin{figure}[h!]
+\begin{center}
+\includegraphics[width=2.5 in]{./images/mipvvem.png}
+\caption[AugerPrime MIP vs. VEM]{This diagram from \textcite{dynrang} shows a typical MIP vs. VEM calibration curve. While it looks linear, a closer inspection shows that the VEM signals are slightly higher than the MIP signals, and this makes sense because a muon will deposit more energy over its \textgreater 1m traversal of the WCD than it will in its short traversal of the SSD.}
+\label{mipvvem}
+\end{center}
+\end{figure}
+
+\section{GPS and Timing}
+Amongst the work packages shown in \autoref{wpdiag} and \autoref{wptab}, the one that I and my colleagues at Case Western are responsible for is the timing and GPS integration. In order to put together any cogent picture of an air shower event, each station must know what time it is according to some shared standard. In smaller experiments, it is sufficient to simply collect all data at a central location using the same cable lengths and electronic delays in each detector. This was, for example, the configuration of Volcano Ranch and AMANDA. In medium sized experiments, where stations can still be connected via wires, but data transfer must be asynchronous, time is often distributed over networks or through distributed protocols. Examples of this include the Large Hadron Collider and IceCube (see \autoref{icecube}). 
+
+For Auger, connecting each station with a wired connection is not technically nor financially feasible, and so time must be distributed in some other way. The cheapest and most accurate solution is to use the constellation of atomic clocks that float over our heads 24/7, delivering accurate timing information for free: the Global Positioning System (GPS). 
+\subsection{GPS Basics}
+\label{gps}
+%\subsubsection{The GPS Equations}
+To inform the coming sections, namely the GPS integration in \autoref{integration}, the spatial correlations in \autoref{spacor} and the receiver testing in \autoref{gpstest}, we will give an informative overview of the relevant facets of the GPS.
+
+Behind GPS is the basic idea of broadcasting the position and current time of a set of satellites, then multiple of such signals are caught by the receiver, which uses its own clock to determine the time-of-flight of the signal. These times-of-flight are then converted into what are called pseudoranges, $\rho_i=c(t_{r}-t_{i})$, where $t_r$ is the time on the receiver's clock when the signal was received and $t_i$ is the time on $i$th satellite's clock, in its reference frame at time of transmission. We can then compare each pseudorange with equations measuring the distance between the satellite and receiver to create a system of equations which will herein be referred to as the GPS equations,
+$$
+|r-r_i|=\rho_i.
+$$
+Here $i$ is an index that runs over the available satellites, of which there must be at least four to fix position and time. More explicitly, these equations are:
+\begsp{
+(x-x_1)^2+(y-y_1)^2+(z-z_1)^2&=c^ 2(t_r-t_1+\Delta t)^2 \\
+(x-x_2)^2+(y-y_2)^2+(z-z_2)^2&=c^ 2(t_r-t_2+\Delta t)^2 \\
+(x-x_3)^2+(y-y_3)^2+(z-z_3)^2&=c^ 2(t_r-t_3+\Delta t)^2 \\
+(x-x_4)^2+(y-y_4)^2+(z-z_4)^2&=c^ 2(t_r-t_4+\Delta t)^2, \\
+\label{gpseq}
+}
+where $\Delta t$ is a correction term to be applied. We can see that these equations can be manipulated in various ways. If we are only concerned about position, we can forget solving for the time coordinate and use only three satellites (i.e. equations). If we want to know only our current time $t_r$, we can fix our last known position and only need to use one equation to find the time. It is common practice to re-parametrize the problem to use pre-corrected pseudoranges and solve for the unaccounted-for error. In equation \ref{gpseq}, we can think of this as moving the $\Delta t$ correction term outside and solving for it, assuming we have the correct $t_i$. 
+
+Of course, in practice we do not want to throw any information out; furthermore, we are dealing with a non-linear system of equations. These do not always admit an easy solution and can have somewhat unpredictable behavior. This is why, in any receiver's electronics, the GPS equations are always solved using either a least squares method, or an iterative solution allowing the receiver to use as many satellites as it can see. These methods allow use of inconsistent sets of equations, meaning that we can use more equations than degrees of freedom, and obtain a more accurate solution. As Langley notes in \cite{gpsworld}, almost all receivers use iterative methods to solve these equations because they can do so quickly and to a higher degree of accuracy. 
+\begin{figure}[h!]
+\begin{center}
+\includegraphics[width=2.8 in]{./images/const.png}
+\includegraphics[width=2.8 in]{./images/coords.png}
+\caption[GPS Diagrams]{Left: A diagram of the available GPS constellation orbits of the original 24 satellites. The red arrow indicates the North Pole. Right: this diagram shows the coordinates and quantities used in GPS calculations.}
+\label{const}
+\end{center}
+\end{figure}
+\subsection{GPS Constellation}
+The Global positioning system was fully brought into service in 1995 with a constellation of twenty four satellites. The original specification for the system was largely dictated by the military's requirements, and today they still run a high frequency encrypted broadcast over the GPS system. As originally designed, a slow rolling local error was added in to the civilian channel, to ensure that only the military was able to get the initially specified minimal $10-15$ m spherical error probable (SEP: the radius from the mean of a collection of points within which 50\% of the points lie). Civilian users received this slow rolling error, officially called Selective Availability resulting in inaccuracies as large as $100$ m \cite{thompson}. Although this is not a crippling error if you are trying to navigate a ship or airplane, it is certainly too far for a driver to decide what street they are on or a detector station to obtain accurate nanosecond timing. In 2000, Selective Availability was turned off by executive order, and the next generation of satellites will be built without this feature. %Rumor has it that in early prototypes of the Auger surface detector, members of the collaboration and engineers they worked with figured out how to unravel the Selective Availability error and situations like this were perhaps ultimately the reason it was turned off at system level.
+
+When the military published the unclassified portions of the GPS standard \cite{milspec}, they did not include the exact relativistic corrections necessary. The standard includes an approximate correction in the form of $\vec{v}\cdot\vec{r}/c^2$ ($v$ and $r$ are the velocity and position of the satellite, $c$ is the speed of light), but this turns out to not be nearly enough to reach their desired accuracy. This is probably a mechanism to offload the programming of corrections to the receiver manufacturer; in fact, each manufacturer keeps their positioning algorithms and corrections as trade secrets \cite{ptoday}.
+
+%\figin{Diagram of the six orbits of the GPS constellation. The North Pole is indicated by the red arrow. }{./images/const.png}{3.2 in}{GPS Constellation}
+The original geometry of the GPS constellation was 24 satellites at $55\degree$ inclination in six different orbits, each azimuthally separated by $60\degree$ (see figure \ref{const}). It has since been expanded to 32 satellites for greater worldwide coverage. With the original geometry, a user should always have at least six satellites in view, allowing for redundancy in the constellation and giving more data for the numerical solution of the positioning equations.
+\subsection{GPS Receiver Communications Protocols}
+\label{m12mcomm}
+Since we will soon discuss the integration of the new GPS receivers for AugerPrime, we will give a general overview of the communication protocol used by our GPS receivers. 
+
+Due to Motorola's early dominance in the GPS market, many receivers that are not for maritime applications use the ``Motorola Binary" (MB) communications protocol. For the stations running in Auger currently (less the EA), the Motorola Oncore UT+, is the chosen GPS unit. Information on the GPS units we tested for AugerPrime is in \autoref{receivers}. The `Maritime Protocol 2000' from the National Maritime Electronics Association (NMEA) takes an approach of simplicity in interpretation and integration. This protocol uses plain ASCII letters and packet spacing to make message relatively human readable. It also can operate at a faster baud rate to make up for the lower information density. 
+
+The Motorola Binary protocol specifies that all connected devices will operate at 9600 baud (or bits per second). The way it is written uses bit and byte packing techniques to absolutely maximize the amount of information contained in a message. In general, it is absolutely not human readable and even has to be interpreted to fit into standard memory structures. In general, the fields in MB are character, short, integer or sub-byte, i.e. 1, 2, 4 or \textless 1 bytes. In the cases where they are less than one byte, each bit generally represents a boolean field. 
+
+An example of the type of messaging that would be sent in MB is shown in \autoref{m12mex}. In this specification, we can see how the bytes of different fields are packed in. It should be noted that MB is a big-endian format, i.e. the first byte (left-most if you like to hearken back to the tape machine formalism) represents the highest value. %I would like to add a personal comment that the way endianness is defined is rather unintuitive. One would think that big-endian means the biggest byte is at the end but of course, it is the opposite. 
+
+Each message is on the order of 100 or so bytes, and so simple math tells us that the 154 byte Time, Position and Status @@Ha message will take $(154\times 8)/9600=.12$s or more than a tenth of a second, and therefore properly handling this long time-of-transmission in software in a non-blocking way is important and will be discussed in both the context of the CWRU HEA group's TIM instrument (\autoref{tim}) and the Auger UUB (\autoref{integration}). 
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=5.8 in]{./images/m12mex.png}
+\caption[Example of a Motorola Binary Message]{Pictured here is the @@Ha message from the i-Lotus M12M users manual \cite{m12muser}. We include this as an example of how the Motorola Binary format is packed and interpreted.}
+\label{m12mex}
+\end{figure}
+
+MB as implemented on the receivers we tested for AugerPrime, which utilized identical command sets, offers a number of commands which are used to provide the essential timing functionality desired. In the early days of Auger, the period of Selective Availability was still at the forefront of the community's thinking and there were still valid questions about how well the GPS constellation would work in South America. If we look at \autoref{const}, we see that the inclination of the orbits, and the fact that they have Half Sidereal Day (HSD) periods, means that they will process around the Earth and there even spacing will effectively provide even coverage everywhere. A simulated plot of coverage is shown in \autoref{peterplot}.
+
+% Even into my time working on Auger, people still had concerns about GPS coverage in Argentina, the gist being that the US would not spend money on GPS to help other countries. This is ignorant of two seemingly obvious facts: first, GPS is meant to guide munitions. It is nice that it can help you find your way around town, but the point of it is to make missiles land in the right place. The Air Force has a vested interest in being able to do this well all over the world. Second, a basic knowledge of orbits tells us this cannot be true. If we look at \autoref{const}, we see that the inclination of the orbits, and the fact that they have Half Sidereal Day (HSD) periods, means that they will process around the Earth and there even spacing will effectively provide even coverage everywhere. A simulated plot of coverage is shown in \autoref{peterplot}.
+\begin{figure}[h!]
+\centering
+\includegraphics[width=5.8 in]{./images/peterplot.png}
+\caption[Simulated GPS Coverage over Auger and Cleveland]{This plot, created by then-undergraduate Peter Fedrizzi under my supervision, shows the average number of satellites visible over Malarg\"{u}e (i.e. Auger, for our purposes) and Cleveland in a given day.}
+\label{peterplot}
+\end{figure}
+\subsubsection{Message Selection}
+\label{messelect}
+The aforementioned concerns led the designers of the UB software to choose three UT+ messages to be recorded in each SD station: @@Ea, @@En and @@Bb. Respectively these are the 8-channel: Time/Status, T-RAIM, and Satellite Status messages. @@Ea is in parity with @@Ha, where both give all of the information the receiver can provide about its positioning and timing solutions, as well as all operational information about the receiver, including temperature, satellite (Space Vehicle, SV) health and clock speed amongst others.  @@Hn and @@En are the Time-Receiver Autonomous Integrity Monitoring messages. These contain estimates on the accuracy of the timing solution, as well as the very important Clock Granularity Message (see \autoref{sawtooth}), and some further information on the health of the constellation. Finally, the @@Bb message, implemented similarly in all of the relevant receivers, gives relevant signal processing and local orbital parameters (elevation and azimuth from the receiver). 
+
+In the UUB, we (Ricardo Sato and the author), looked at the actual science goals and realized that we were using a lot of processing power parsing and saving messages that did not contribute to the physics we are trying to accomplish. Namely, the @@Ha message can be replaced by the approximately 75\% shorter @@Hb message, which does not give irrelevant information about the receiver's operation, and instead sticks to only useful time and positioning data. Beyond that, the @@Bb message was cut out entirely since concerns about the operation of GPS have more or less subsided (see \autoref{spacor} for some that remain). This brings us from 324 bytes per second to parse, down to 132 bytes total. If need be, all of the messages we've mentioned above and others are implemented in the UUB software and can be enabled remotely (see \autoref{integration}). 
+
+\subsubsection{Sawtooth Correction: The Clock Granularity Message}
+\label{sawtooth}
+If we take a look at the M12M's data sheet, it shows a \textless2 ns PPS (Pulse-per-Second) accuracy, however it sports a 40Mhz oscillator with 25ns coarse grained timing accuracy. The mechanism through which it achieves its higher PPS accuracy than the oscillator would normally allow for is by accurately calculating the phase of a clock cycle in which the PPS should truly land and communicating this via its serial connection in the @@Hn message. This is called the clock granularity message, which takes the form of a bipolar sawtooth pattern, showing the precession of the true PPS around the receiver's clock. 
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=5.8 in]{./images/sawdiag.pdf}
+\caption[Sawtooth Diagram]{Here we have a schematic diagram showing how the sawtooth correction works. By finding the phase difference between the leading PPS edge and the actual beginning of a GPS second, the receiver can deliver a serial message which allows the user to obtain a very accurate beginning-of-second time. In this diagram, we have used 4Hz for the square wave to represent the GPS Receiver's clock.}
+\label{sawdiag}
+\end{figure}
+\begin{figure}[h!]
+\centering
+\includegraphics[width=4 in]{./images/sawdat.pdf}
+\caption[Sawtooth Data]{Provided here is a plot of 60 seconds of M12M sawtooth corrections. This plot shows the sawtooth behavior, as well as a phase alignment shift around 15 seconds, where, because of the precession of the true PPS around the output PPS, we see a change in the sawtooth pattern and then a change back. These occur on the time scale of anywhere from hours to minutes, depending on the sky conditions and how long the receiver has been running.}
+\label{sawdat}
+\end{figure}
+$\,$\\
+The mechanics of this precession are, at surface level, easy to understand (see \autoref{sawdiag}): the receiver's oscillator is not perfectly trained to the GPS constellation, and we need not require it to be. If we ask about the specific form of the sawtooth over a given interval, such as that shown in \autoref{sawdat}, more complicated dynamics come into play. Some of these will be discussed in \autoref{spacor}, but to summarize, all of the effects that can come into play in the receiver, such as sky conditions and temperature modulation affect this pattern.
+\subsubsection{WGS-84}
+\label{wgs84}
+To calculate distances and understand altitudes and positions as needed both in Auger and for a number of other HEA group activities (e.g. \autoref{augeratta}, \autoref{spacor}), we will need an introduction to the useful details of GPS coordinates.
+
+The coordinate system used by GPS is called the World Geodetic Survey of 1984, or WGS-84. While there are plenty of technical details to discuss, they are largely outside the purview of this work. WGS-84 represents an extremely detailed model of the earth including tidal and tectonic effects. For us, the only relevant portions is referred to as the WGS-84 Ellipsoid, and it tells us three very important parameters. From \textcite{wgs84}, the semi-major axis of the coordinate system the Earth is embedded in via this standard is a=6378137 m, and the semi-minor axis is c=6356752.3 m. The radius as a function of latitude is:
+\begeq{
+r=\left(\sqrt{\frac{\cos(\theta)^2}{a^2}+\frac{\sin(\theta)^2}{c^2}}\right)^{-1},
+}
+where $\theta$ is the latitude. This is a simply derived fact of 2D geometry. For the purposes of this work, this is really all we need to know about WGS-84.
+\section{GPS Integration}
+\label{integration}
+To truly integrate the chosen GPS unit, the Synergy SSR-6Tf, we need to address its hardware requirements, and its software requirements. Before beginning this discussion, we would like to note that the i-Lotus M12M receiver and the SSR-6Tf are entirely interchangeable outside of minor performance differences which will be discussed in \autoref{gpstest}. Some design choices surrounding the GPS integration have already been discussed in this chapter, so this particular section represents the majority of the software and firmware work, but not all of it (e.g. \autoref{messelect}). To begin, we will discuss the firmware design tools, and then we will move into a discussion of the actual software architecture. Along the way, we will discuss the design choices that were made by the timing team.
+\subsection{The Purpose of GPS in AugerPrime}
+In implementing GPS receivers for Auger and the AugerPrime upgrade, we give the mission-critical ability of synchronizing time across the vast distances covered by the SD. The time differences in stations for moderately inclined showers will be on the order of small numbers of microseconds, but for near vertical showers, accuracy on the order of tens or hundreds of nanosecond is required to obtain sub-degree reconstruction. This accuracy is already marred by the variable width of the shower front, and so we can keep our aggregate error down by having the best timing and time synchronization possible. 
+
+Beyond timing, the AugerPrime upgrade gives the collaboration the opportunity to implement GPS receivers which have positioning capabilities that are more accurate than those of human surveyors. Upon construction of the array, trepidations related to Selective Availability and the relatively poor accuracy of the UT+ led the collaboration to employ surveyors to find accurate positions for all 1660 SD stations. These were then uploaded to the UT+ models. Ultimately, it was found that the UT+ models, by taking week long survey campaigns, could find their position better than the human surveyors anyway, but with the new SSR-6Tf receivers, excellent positioning data should be immediately available and a survey campaign can be used to obtain positions to much greater accuracies than human surveyors. 
+%put in diagram of time differences as function of zenith for 1.5km separation
+
+\subsection{Hardware Design}
+The first step in implementing the AugerPrime GPS receiver is to build a firmware that allows communication with it. The prime character here is the UART or Universal Asynchronous Receiver and Transmitter. A UART allows serial communication without clock synchronization between two devices. The M12M and SSR-6Tf receivers utilize a slightly modified version of the RS-232 communications protocol. Namely, they use a logical-high voltage of 2V\textless V\textsubscript{high}\textless 3V. Precariously, this lands between the commonly used 1.8V and 3.3V logic standards, however we have extensively tested it at 3.3V and it works as expected, even for years on end. In choosing a UART and implementing it, we have to consider a few criteria:
+\begin{itemize}
+\item Reliability- How long will the UART run for without resets or software-based housekeeping?
+\item Simplicity- How much FPGA resources will the UART take up?
+\item Flexibility- Can the UART settings be changed, or are they hard coded?
+\end{itemize}
+Ultimately, the choice of UART boils down to the latter two conditions, since both options that we looked at were extremely reliable as far as our testing could discern. Since, as was mentioned before, in the UUB design, Zynq\textsuperscript{TM} slice space is at a high premium, whichever UART is chosen should be evaluated based on being able to accomplish the task at hand with an absolute minimum of resource utilization. 
+
+From a logical point of view, an FPGA is simply a device which connects sets of logical gates (AND, OR, XOR, etc.) to emulate actual hardware functions. A known principle at work here is that any piece of digital hardware or software can be broken down into a logical construct using logic operations. FPGA resources boil down into units of slices. A slice contains three high level types of resources which are used to create the requested set of logical gates. These are LUTS, registers and multiplexers. The Look-Up Tables, or LUTs, give the FPGA the ability to handle functions which need to take a semi-continuous input and map it to a semi-continuous output. Registers and flip-flops (at the level of this task, these are effectively the same thing) allow the storage of information, and the synchronous passing of it along a data path. Finally, the multiplexers, which are effectively invisible to the firmware programmers, are used by the design software to make the connections between various gates. In some sense they act as hardware relays, but without any electromechanical movement.
+
+For AugerPrime, we will be using the UART only to communicate with one device at one baud rate. Therefore, flexibility is the less important criteria, and simplicity dictates our UART choice. In \autoref{rectab}, the resource utilization for the UART 16550 (\cite{16550}), a long standing industry standard, and that for the UART Lite (\cite{lite}), a Xilinx original IP, are shown. Further on, we have a top-level diagram for the UART Lite in \autoref{uartdiag}. Based on the lower resource utilization, we made the recommendation that we use the UART Lite. In shakedown testing it performed admirably and was, in finality, used in the UUB and all of the TIM-based projects the CWRU group took part in.
+\begin{table}[h!]
+\centering
+\begin{tabular}{|c|c|c|c|} \hline
+Device & Slices & Slice Registers & LUTs \\ \hline
+UART 16550 & 118 & 308 & 347  \\ \hline
+UART Lite & 49 & 79 &119  \\ \hline
+\end{tabular}
+\caption[FPGA UART Utilization Comparison]{Here are the different resource utilizations for the relevant configuration of the two Xilinx UART IPs in question \cite{lite, 16550}.}
+\label{rectab}
+\end{table}
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=5.2 in]{./images/lite.png}
+\caption[UART Lite Top-Level Diagram]{From \textcite{lite}, we have the top-level digram for the UART Lite IP. This is identical to the top-level digram for the UART 16550, but its resource utilization is lower since the BRG (Baud Rate Generator) is locked in during firmware synthesis and implementation.}
+\label{uartdiag}
+\end{figure}
+
+\subsubsection{Introduction: Xilinx Vivado\textsuperscript{TM} Design Tools}
+\label{vivado}
+Until relatively recently, FPGAs and their programming were riddled with hazards. For many FPGAs until the early 2000s, they could only be used once, i.e. once a firmware design was implemented in them, it could not be changed. They were, therefore, useful only in testing designs that would most likely become their own Integrated Circuit (IC) or Application Specific Integrated Circuit (ASIC, IC usually refers to a single chip, while an ASIC is almost always a type of printed board with ICs on it.) In recent years, they have become practically infinitely reprogrammable. This is one advance that makes them absolutely ideal for AugerPrime, where we can actually rewrite the firmware and test it in the lab to implement new triggers especially, but any other minor firmware change as well. After testing, the new firmware can be sent directly and wirelessly to each of the 1600 stations. From a science point of view, this is golden; we now can modify the way our detector operates to look for more interesting patterns or to more efficiently detect mundane events.
+
+Perhaps the more important advance than the flexibility of FPGA program, is the simplicity in the design tools. Most FPGA manufacturers now have fully graphical design tools, which greatly lowers the effective ``barrier for entry" in FPGA programming. Traditionally, FPGAs are programmed in hardware verification languages (sometimes called hardware design languages) to produce what is called a \textit{bitstream} (we have been veiling this with the term ``firmware design", the final product of a firmware design is a bitstream). The design suite that was used for AugerPrime of course comes from Xilinx and really consists of two important products, Vivado\textsuperscript{TM} and the Source Developer's Kit (SDK). Vivado\textsuperscript{TM} is used to create the bitstream, and allows both graphical block diagram editing as well as hardware design language editing. To stymie confusion, from here on out, hardware design language refers to any available hardware verification language, HDL, Verilog or VHDL. 
+
+The general work flow in Vivado\textsuperscript{TM} is to start a project, which prompts you to select the type of hardware you are using. Vivado\textsuperscript{TM} knows the descriptions for all Xilinx programmable devices and imports a specification describing the devices abilities and port structure. The port structure essentially lists all of the available pins on the device. In some cases such as when working with their Zynq\textsuperscript{TM} evaluation board, the ZedBoard\textsuperscript{TM}, the software already knows how the port structure maps onto physical ports, and can take advantage of this. In the case of the UUB, all ports must be manually mapped. This involves the use of a \textit{design constraints file}, in the .xdc format. These files allow specification of a logic standard and an external port to be mapped to a physical pin on the Zynq\textsuperscript{TM} chip.
+
+All of the other functions of Vivado\textsuperscript{TM} pertain specifically to what is happening on the FPGA. This is where the \textit{block diagram} comes in. In Vivado\textsuperscript{TM}, there are 3 interconnected units you have to manage. The block diagram is the portion where you can invoke IP, which stands for Intellectual Property, but effectively these are firmware versions of hardware devices, i.e. ICs. The block diagram allows you to spatially arrange and interconnect IPs and is where most of the work in Vivado\textsuperscript{TM} is done. Most standard electronics have a corresponding IP and utilizing it involves invoking the IP, connecting its buses and ports to the other elements of the block diagram, customizing the IP in whatever way you need, and finally, if needed, mapping it to an AXI (Advanced eXtensible Interface) address. AXI is the primary communication bus in many ARM devices, and certainly is the most widely used in the UUB. 
+
+Beyond the constraints file and the block diagram, the last design parameter we want to control at a high level is the top level wrapper. This is a piece of hardware design language (Vivado\textsuperscript{TM} supports both Verilog and VHDL generation) which relates the external connections of the constraints file to the internal connections of the block diagram. It is in here that we can, for example, connect a signal line to an external port. We can also map such a signal line to split off into an LED for monitoring, or connect it to two ports to allow a signal to be used by multiple IP in the block diagram.  
+\subsubsection{Implementing the UART}
+As elucidated in \autoref{vivado}, we have to look after three tasks to implement the UART in the UUB. First, we instantiate the block diagram and make our customizations, then we add a connection to the top level wrapper, and finally we make a external connection with the constraints file.
+\begin{figure}[h!]
+\centering
+\includegraphics[width=3.6 in]{./images/litebd.png}
+\caption[UART Lite Block Diagram Representation]{This is the UART Lite's block on the block diagram. It is shown here to give some idea of what the IPs in the block diagram look like and to show the ports that must be connected for it.}
+\label{litebd}
+\end{figure}
+Adding the UART Lite is as simple as right clicking on the block diagram in Vivado\textsuperscript{TM} and searching for it. Upon adding it, we are greeted with \autoref{litecustom}. Here we can select the baud rate and parity bits we want, which are respectively 9600 and 0 for the SSR-6Tf. We can then accept these parameters and move to the AXI Mapping tab, where Vivado's\textsuperscript{TM} built-in address mapping tool does a fine job of taking care of this part of the task automatically. 
+\begin{figure}[h!]
+\centering
+\includegraphics[width=5.2 in]{./images/litecustom.png}
+\caption[UART Lite Customization Parameters]{In this Vivado\textsuperscript{TM} window, we are given our rather sparse options to customize the UART Lite. Those shown here are the correct configuration for the SSR-6Tf GPS receiver.}
+\label{litecustom}
+\end{figure}
+Next, we have to make the connection from the PL to the top level wrapper. Vivado\textsuperscript{TM} can do this automatically, but it will destroy any custom firmware you have written into your wrapper. We would endorse saving your wrapper elsewhere, allowing Vivado\textsuperscript{TM} to automatically generate the wrapper, and then re-inserting your custom PL code appropriately. This can sometimes be a moderately confusing and lengthy task and in my experience, it must be done in one sitting or you will certainly forget some detail of what you have done. This is also an excellent place to take good notes on what you have done. In figure \autoref{wrapper}, we have shown a snippet of the top level wrapper for a custom Vivado\textsuperscript{TM} project. The UUB's top level wrapper is not publicly available, although the hardware description file which contains binarized information from the top level wrapper is available through the uub-firmware github, \url{https://github.com/auger-prime-sde/uub-firmware}, under work package 5.
+
+In UUB's wrapper, these signals are called \textit{GPS\_RX} and \textit{GPS\_TX} for GPS receive and transmit, while in \autoref{wrapper}, the analogous signals are \textit{sin} and \textit{sout}. To clarify, \textit{signal} is the correct hardware design language term for this object, which represents a physical signal carrying wire. Once we have the wrapper taken care of, we need only attend to our final task: correctly constraining the signals to physical ports or pins on the Zynq\textsuperscript{TM} chip. This is as simple as adding two lines per signal to the constraints file (usually just called \textit{constraints.xdc}). One line specifies the signaling standard, e.g. 1.8V or 3.3V, and the other specifies the ``package pin" or physical site on the Zynq\textsuperscript{TM} chip that the signal is to end up in. In the case of integrating the SSR-6Tf into the UUB, these lines are:
+\begin{verbatim}
+set_property PACKAGE_PIN V10 [get_ports GPS_TX]
+set_property PACKAGE_PIN V9 [get_ports GPS_RX]
+set_property IOSTANDARD LVCMOS33 [get_ports GPS_TX]
+set_property IOSTANDARD LVCMOS33 [get_ports GPS_RX]
+\end{verbatim}
+With this, we should have firmware for a working UART Lite. This is ultimately how GPS communications are implemented in the firmware for AugerPrime. Specifications of the ports and pins are publicly available in \textcite{uubconst}.%While this may seem like a somewhat simple tasks, the work is in understanding the context surrounding such simple steps and thoroughly testing them.
+\begin{figure}[h!]
+\centering
+\includegraphics[width=4 in]{./images/toplevel.png}
+\caption[Top Level Wrapper Example]{This Vivado\textsuperscript{TM} window shows the Verilog wrapper used in a custom project. As mentioned in the text, the UUBs wrapper is not publicly available, however it is similar with a bit more going on. }
+\label{wrapper}
+\end{figure}
+\subsubsection{Physical Connection}
+On the UUB and in the various testing enclosures, the GPS unit is mounted on a 60mm$\times$40mm pad, with a 20 pin connector. The technical drafting diagram is shown in \autoref{m12mdraft} and the physical board layout in \autoref{pinboard}. The specification of most importance to the work described above is in \autoref{pinoutm12m}, although ultimately the routing of these pins is handled by the integration team at LPSC Grenoble, headed by Eric Lagorio, one of the lead electrical engineers on AugerPrime. I should also clarify that while these images are for the M12M, the analogous images for the SSR-6Tf are only cosmetically different. The pinout is the same and so are the features, however the SSR-6Tf users manual is still in draft form and not ready to be released to the public. We in the HEA group at CWRU have been granted a copy for use, but not distribution.
+\begin{figure}[h!]
+\centering
+\includegraphics[width=4 in]{./images/techdraft.png}
+\caption[M12M Footprint Technical Draft]{Here is a technical drafting of the M12M and SSR-6Tf's shared footprint from \textcite{m12muser}.}
+\label{m12mdraft}
+\end{figure}
+\begin{figure}[h!]
+\centering
+\includegraphics[width=4 in]{./images/pinboard.png}
+\caption[M12M Physical Board Layout]{This rendering shows the physical layout of the M12M receiver, but more importantly for our purposes, it shows the pin ordering which corresponds to \autoref{pinoutm12m}. From \textcite{m12muser}.}
+\label{pinboard}
+\end{figure}
+\begin{table}[h!]
+\centering
+\includegraphics[width=4 in]{./images/pinoutm12m.png}
+\caption[M12M/SSR-6Tf Header Pinout]{This table from \textcite{m12muser} shows the all-important pinout. These pins are then routed, some into the FPGA and some into other components on the UUB.}
+\label{pinoutm12m}
+\end{table}
+
+\subsection{GPS Communications Software}
+After implementing the hardware to communicate with the GPS, we need to write the software. This was a joint effort between Ricardo Sato and myself. The software really consists of 2 main parts: the initial message handling is operated through what we call a \textit{parser}, and then the data is put into classes using \textit{packing functions}. We should note now, that a careful reading of \autoref{m12mcomm} is an absolute prerequisite for understanding what will be said in this subsection.
+\subsubsection{Parser}
+Essentially, the parser performs two functions, it figures out when a message has been received and then it figures out what type of message it was. These functions are accomplished in the UUB in the main loop of a file called \textit{gps\_main.c}. The \textit{select} command, shown in-situ in \autoref{parser} is the real workhorse of the parser. This command takes five arguments: the first is an integer describing the place in the second argument, which is a file descriptor with read privileges. The second and third arguments are unused in the AugerPrime software as they wait for a file descriptor to become available for writing and to monitor a file descriptor for exceptions, respectively. The final argument gives a timeout, which in our case is set to 10s. 
+\begin{figure}[h!]
+\centering
+\includegraphics[width=5 in]{./images/select.png}
+\caption[GPS Parser Loop]{Shown here is the main loop of the AugerPrime GPS message parser. Note that the select statement effectively does all of the work of monitoring for changes in the file descriptors.}
+\label{parser}
+\end{figure}
+When the \textit{select} command is activated, it passes the point in the readable file descriptor to \textit{gps\_receiver\_read\_msg}, which takes in the message until it encounters a valid message. This is specified by a carriage return and line feed, proceeded by a correct XOR checksum of the entire message. Do to the nature of XOR, it is sufficient to take the XOR of the message from the very beginning, before the first ``@" and go all the way through the checksum. This should result in a value of 0x00, indicating that the message XOR matched the checksum sent by the receiver. Once this is true, \textit{gps\_receiver\_process} is activated, with the data from the most recent message. This function, shown in \autoref{recproc}, figures out the message type from the available messages implemented. Finally, the type is passed back into the parser loop where a set of if/else statements activate the appropriate packing function and extract the needed data. The ultimate product of this loop is the \textit{gps\_process\_info} function, which globalizes the information parsed and packed here for the rest of the UUB software to make use of.
+\begin{figure}[h!]
+\centering
+\includegraphics[width=3.2 in]{./images/recproc.png}
+\caption[GPS Receiver Process]{Here is the process which decides what type of message has been received. It simply asks if the first two letters match any of the pre-assigned messages. If not, it passes back to the \textit{gps\_main} process and resets the receiver's messaging parameters.}
+\label{recproc}
+\end{figure}
+\subsubsection{Classes and Packing}
+Once the \textit{gps\_receiver\_process} function has decided on the correct message type, the message gets passed back to the parser process in \textit{gps\_main} where it is packed into a struct for readout. Packing these data into structs allows and sensible access to any of the parameters contained within, and is widely considered the ``correct" way to handle serialized data. From a programming point of view, creating these structs and packing functions is relatively straightforward. 
+
+To create a struct and packing function for a particular message, we need only look in the M12M User's Guide \cite{m12muser}, and create the appropriate fields for each piece of data we desire to store. In keeping with good practices, we have made all of the data from any of the possible messages available, except for bit fields, which are generally not collected in housekeeping. As an example of making a struct, we can look back at \autoref{m12mex}, and compare it with \autoref{hastruct}. In \autoref{m12mex}, we see that each parameter has a big-endian set of bytes that it corresponds to. The largest of these is an int, and the smallest is a char, although as mentioned before, some chars represent bit fields. 
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=1.8 in]{./images/hastruct.png}
+\includegraphics[width=3.7 in]{./images/hapack.png}
+\caption[@@Ha Message Struct and Packing Function]{Left: This is the code snippet where the struct for an @@Ha message is contained, note the parity in field with \autoref{m12mex}. Right: here we have the corresponding packing function, which takes the contiguous data in the serialized Motorola Binary message, and maps it to the correct fields in the struct for easy data access.}
+\label{hastruct}
+\end{figure}
+
+Before continuing on, we should also address the necessity of the packing function. Why is it that we cannot just, for example, \textit{memcpy} the message onto an initialized struct? As it happens, a painful lesson we learned very early on, is that when the $C$ programming language creates structs it organizes the information in them sequentially, as requested by the user, but perhaps not in a spatially intuitive manner. In order to efficiently access the stored information, it spaces the data in memory such that it will not have to access mixed elements within a 4 byte range. To give an example, if we request:
+\begin{verbatim}
+struct identification{
+int bignumber1;
+char middleinit;
+int bignumber2;  };
+\end{verbatim}
+and we take a look at the memory structure, upon accessing the 0th byte through the 3rd, we will get parts of \textit{bignumber1}, and if we access the 4th byte we will get \textit{middleinit}, but if we access the 5th byte, we will get 0. This is because $C$ has aligned \textit{bignumber2} such that it need not access mixed types within each 4 byte block. This pattern continues if we were to change \textit{middleinit} to three 2 byte short fields such that now there will be 8 bytes in between \textit{bignumber1} and \textit{bignumber2}, but only 6 of them will be filled. Hence, we really need a map from the scenario where data is serialized continuously, to that where the data is packed in an easily accessible struct. This is the purpose of the packing function.
+
+An important detail is the handling of repeated fields in a message; an example is given in \autoref{repfield}. The repeated data types are instantiated in their own struct, which becomes a substructure of the greater message. These are packed by a \textit{for} loop, with the offset from the beginning of the message noted (an \textit{int} was used for convenience; it is now a \textit{const}). 
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=4.5 in]{./images/repman.png} \vspace{10 pt} \\
+
+\includegraphics[width=1.8 in]{./images/repstruct.png}
+\includegraphics[width=4.0 in]{./images/reppack.png}
+\caption[Handling Repeated Fields]{Top: the manual entry from \textcite{m12muser} for the repeated field of channel-wise satellite data. Bottom Left: the struct corresponding to one channel. Bottom Right: the packing function which iterates over the contiguous data, putting it into the channel structs.}
+\label{repfield}
+\end{figure}
+
+Taking a look at \autoref{hastruct}, we can see in the right panel, the packing function corresponding to the struct in the left panel and the message in the User's Manual shown in \autoref{m12mex}. Each of the allowed messages has such a corresponding struct created in the same way: (1) examine the manual (\textcite{m12muser}), (2) create a struct corresponding to the data in the message, (3) write a packing function for the message, (4) add the message header to \textit{gps\_receiver\_process} and finally (5) add the packing function and any relevant readout to the \textit{while} loop in \textit{gps\_main} (under the select block). The messages implemented currently are likely the only ones which will be relevant for future use, and are as follows:
+
+\begin{table}[h!]
+\centering
+\begin{tabular}{|c|c|} \hline
+Message Header & Content Summary  \\ \hline
+@@Ha & Time/Position/Receiver Status, Detailed  \\ \hline
+@@Hn & T-RAIM + Sawtooth Information  \\ \hline
+@@Hb & Short Time/Position  \\ \hline
+@@Bb & Satellite Statuses and Information   \\ \hline
+@@As & Position Hold Parameters   \\ \hline
+@@Cj & Receiver Identification Message (all ASCII, no packing needed)  \\ \hline
+\end{tabular}
+\caption[GPS Message Type]{Above are the message types implemented in the finalized version of the UUB GPS code.}
+\label{messtab}
+\end{table}
+
+\section{Board Operating System and Bring-Up}
+\label{bringup}
+To accomplish the goal of finding the composition of primaries through the SD, we need to add new detectors to each station. Handling the data from these new detectors will require a new board, the UUB, and that board requires an operating system. In this section, we will explain how that operating system was set up for the UUB, a project which the author headed in the beginning phases. This section is structured to first give a brief overview of the boot stages and PetaLinux, and then to give the documentation we created for compiling and booting PetaLinux, and finally we will give a ``crash course" on how programs are added to the PetaLinux compilation.
+\subsection{Boot Stages}
+Four stages are required for the UUB to start up. They are listed and defined below:
+ \begin{enumerate}
+ \item Bootstrapper: Initializes the Zynq\textsuperscript{TM} and is hardware specific but can be made trivially from a board support package.
+ \item First stage bootloader: Provides resources for second stage bootloader. This is made for Zynq\textsuperscript{TM} chips in general, not for a specific board.
+ \item Second stage bootloader: The most commonly used solution and the one we will employ here is a program called U-Boot, which is available preconfigured for Zynq. U-Boot is effectively a stripped down Linux kernel which gives a large enough command set to do some debugging and launch the main kernel.
+ \item Operating system: Here we need a true Linux operating system, like PetaLinux or Ubuntu. It will be configured using a device tree which is available for the UUB through the Xilinx Design Tools. It will be cross compiled on an external Linux platform using the provided Xilinx toolchain (Code Sourcery).
+\end{enumerate}
+\subsection{PetaLinux}
+To fulfill our operating system needs, the UUB will make use of the Xilinx recommended PetaLinux operating system. PetaLinux is easily compiled for ARM systems and gives all of the needed functionality in a package smaller than 10MB, although this can be expanded for greater functionality. The PetaLinux SDK has a number of useful options for all manners of communication, including a lightweight SSH server, drivers for many commonly used peripherals, and an open source configuration, allowing even kernel level modifications. Ultimately, however, the decision to use PetaLinux over any other operating system was made because it is integrated into the Xilinx ecosystem, making development much easier.
+\subsection{Bring-up Documentation}
+\begin{figure}[H]
+\centering
+\includegraphics[width=4.5 in]{./images/petalinux.png}
+\caption[PetaLinux Config Screen]{This is the screen you are greeted with upon running \textit{petalinux-config} in your project directory. From here you can configure the operating system with whatever options you desire.}
+\label{petalinux}
+\end{figure}
+Better than simply explaining the work we completed for the board bring-up, we can give here the final result, which was the documentation displayed in the following sections. This documentation outlines a method to bring-up PetaLinux for an arbitrary hardware image, given that it satisfies the requirements in Section \ref{prereqs}. Start to finish it takes about 6 hours, only about an hour of which is foreground tasks; the majority of the time is spent downloading, installing and compiling. The document has been written for someone who is fairly competent with the Vivado\textsuperscript{TM} design suite, and vaguely familiar with Linux. If you need help with the design suite you should try the first few Zynq\textsuperscript{TM} hardware and software tutorials, after which you can send the author your questions via email if needed. If you are not familiar with how to use a Bash terminal or the intricacies of Linux, there are a plethora of online resources and Stack Exchange is usually helpful in this way.
+\subsection{Installing the Environment}
+\subsubsection{Necessary Downloads}
+\begin{itemize}
+\item VMware Player ($75 MB$)
+\subitem Found on the VMware websites downloads, free to use for non-commercial purposes
+\item CentOS 6.6 i386 ($3.6 GB$)
+\subitem Download from ``older versions'' area, make sure you get i386 and NOT x86\_64
+\item Vivado\textsuperscript{TM} and SDK 2014.4 for Linux ($4.9 GB$)
+\subitem Can be acquired off the Xilinx website under the Downloads section
+\item PetaLinux SDK ($1.2 GB$)
+\subitem Located in a different section of the Xilinx Downloads
+\item TeraTerm or equivalent serial terminal emulator
+%\item Digilent Cable Drivers ($2MB$)
+\end{itemize}
+
+\subsubsection{Necessary Packages}
+\label{pack}
+yum these packages after booting the VM and before installing anything else: \\
+\nohyphens{dos2unix iproute gawk gcc git gnutls-devel net-tools ncurses-devel tftp-server zlib-devel flex bison libstdc++.i686 glibc.i686 libgcc.i686 libgomp.i686 ncurses-libs.i686 zlib.i686 redhat-lsb}
+
+\subsubsection{Necessary Prerequisites}
+\label{prereqs}
+\begin{itemize}
+\item .hdf Hardware Description File from Vivado\textsuperscript{TM}
+\subitem Found in the SDK directory in the Vivado\textsuperscript{TM} project folder
+\subitem \textbf{Design Requirements:}
+\subitem Must have TTC enabled (Under MIO Configuration for the Zynq\textsuperscript{TM} PS  in Vivado\textsuperscript{TM})
+\subitem Must have DDR enabled (Follow the first two Zynq Hardware tutorials that come with the board)
+\subitem Should use PS UART (Also in first two Zynq HW tutorials)
+\item .bit Bitstream file from Vivado\textsuperscript{TM}
+\subitem Can be exported separately from Vivado\textsuperscript{TM} 2014.4
+\end{itemize}
+
+\subsubsection{Installation Procedure}
+
+\begin{enumerate}
+\item Install VMware Player
+\item Create a VM with the CentOS 6.6 image (must be 32-bit), you should a lot $40GB$
+\subitem At this point you will want to open a terminal in the VM and assume superuser priveleges:
+\subsubitem Either use the command ``su'' to log in as root
+\subsubitem Or add yourself to the sudoers list and use ``sudo'' in the following steps as appropriate.
+\item Install the packages listed in section \ref{pack}.
+\subitem run ``yum install $<$package list$>$''
+\item Unzip the .tar.gz file for Vivado\textsuperscript{TM} and SDK.
+\item Open the directory you unzipped the installer into and run ./xsetup with root priveleges.
+\item Follow the steps and be sure to install Vivado\textsuperscript{TM}, SDK and the cable drivers. You want Vivado\textsuperscript{TM} Design Edition, and add SDK and Cable drivers. It will by default install to the correct location, /opt/Xilinx/.
+\item\nohyphens{ Run the PetaLinux 2014.4 installer with root privileges (``./petalinux-v2014.4-final-installer.run /opt/pkg/'' to install to /opt/pkg/. Be sure to ``mkdir /opt/pkg/'' before attempting install).}
+\end{enumerate}
+\subsection{Configuring a Board for Boot Up}
+\subsubsection{Setting up Working Environment}
+\begin{enumerate}
+\item Change directories to the Vivado\textsuperscript{TM} install directory (/opt/Xilinx/Vivado/2014.4/) and ``source ./settings32.sh''
+\item Change directories to the PetaLinux install directory and ``source ./settings.sh''
+\subitem Ignore the `no tftp' error, it does not matter for our purposes.
+\end{enumerate}
+\subsubsection{Configuring and Building PetaLinux}
+\begin{enumerate}
+\item In a directory of your choice, run ``petalinux-create -{}-type project -{}-template zynq -{}-name $<$name of project$>$'' where you've put in the name of your project, without spaces. It will create a new directory named after the project in the directory. The directory it creates is called the ``project directory''
+\item Place your Bitstream (.bit) and Hardware Description File (.hdf) in a subdirectory to your  project's main directory. We will call it ``./SUPPORT'' for the purposes of this documentation.
+\item In that directory run ``petalinux-config -{}-get-hw-description=./SUPPORT/''
+\item this should take a minute, at which point you can configure your kernel and hardware settings. Other configuration options are available and can be found in the PetaLinux command line reference(\cite{commands}). The default settings should be fine in most cases. Exit and save. It will take another minute to finish configuration. 
+\item Now we are ready to build, simply run ``petalinux-build''
+\item (OPTIONAL) You can package the project if you plan to boot it off an SD card or flash memory. You will need to reference the bitstream to do this. 
+\\Run \nohyphens{``petalinux-package -{}-boot -{}-fsbl ./images/linux/zynq\_fsbl.elf -{}-fpga $<$bitstream file$>$ -{}-u-boot''.}
+\end{enumerate}
+\subsubsection{Booting Your Build}
+In this documentation we will only cover booting off of JTAG. Documentation for booting off of the SD card can be found in the Reference Guide \cite{reference}.
+
+It is also worth noting that VMware player handles whether your physical computer or your virtual computer has which component of the UUB plugged into it. That is, if you want to run TeraTerm in Windows and run the PetaLinux console on your VM you can do so by connecting the appropriate devices (Cypress USB UART is the standard I/O, the JTAG is the future devices Digilent USB) in the top right panel of the VM. 
+\begin{enumerate}
+\item Plug in all the required cable for your board. Be sure to have an output to a terminal. Start the Terminal emulator such as TeraTerm after powering on the board.
+\item Run these commands in order, pausing between each:
+\subitem petalinux-boot -{}-jtag -{}-fpga -{}-bitstream $<$bitstream file (.bit)$>$
+\subitem petalinux-boot -{}-jtag -{}-fsbl ./images/linux/zynq\_fsbl.elf -{}-extra-xmd ``init\_user''
+\subitem petalinux-boot -{}-jtag -{}-u-boot
+\subitem petalinux-boot -{}-jtag -{}-kernel
+\item You should now see the terminal emulator starting to show the output of the board booting Linux. Login with username: ``root'' password: ``root''. 
+\end{enumerate}
+\subsubsection{Adding Programs}
+To add programs to the PetaLinux kernel, we need only run this command in the project directory:
+\begin{verbatim}
+petalinux-create -t apps -n <program name> --enable
+\end{verbatim}
+where we replace $<$program name$>$ with whatever we are naming the application. For porting programs from the UUB, this was done for each component program, and then they were debugged on an actual UUB (not an evaluation board). With this workflow, your program will be compiled every time you compile PetaLinux, although you can use the petalinux-build command to build individual applications.
+
+
+\section{Conclusions: Reliability of the Integrated GPS and Operating System}
+At time of writing, the PetaLinux operating system and the GPS software and firmware have been running in the Auger Engineering Array (EA) for more than two years. Beyond having no reported issues with either system, we have not received any request for further functionality. From the lack of issues, we can say that the integration and board bring-up were successful.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

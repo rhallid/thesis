@@ -35,7 +35,7 @@
 % Appendix
 % Bibliography
 
-
+%some shit has changed
 \documentclass[12pt,notitlepage]{report}
 \usepackage{ mathrsfs }
 \usepackage{lipsum}
@@ -51,13 +51,17 @@
 \usepackage{gensymb}
 \usepackage{times}
 \usepackage{setspace}
+\usepackage{longtable}
 \linespread{1.8}
 \usepackage{titling}
 %\usepackage{fullpage}
 %\usepackage[utf8]{inputenc}
+
 \usepackage[sorting=none]{biblatex}
 \bibliography{references}
+
 \usepackage{hyphenat}
+%\usepackage{natbib}
 
 %\addbibresource{references.bib}
 % Sets up the correct margins
@@ -106,9 +110,8 @@
 \makeglossaries
 % Used to make a glossary and list of abreviations.
 % Comment both lines out if not using.
-
-
-
+\newcommand{\bigcite}[1]{
+\citeauthor{#1} (\citeyear{#1}) \cite{#1}}
 \newcommand{\sutwo}[4]{
 \left(
 \begin{array}{cc}
@@ -249,15 +252,16 @@
 % Use whatever is common for your subfield (perhaps a journal style)
 %\bibliographystyle{JHEP} 
 
-% \includeonly{./timing/timing}
+%\includeonly{./starburst/starburst,./frontmatter/abstract}
 % If you only want to include some of your chapters but want the numbering and such to be correct include them in the above
 
 \begin{document}
+\interfootnotelinepenalty=10000
 \newgeometry{left=1.5in,bottom=1in,top=1in,right=1in}
 %%%%%%%%%% ORDER OF THESE COMMANDS DOES NOT MATTER %%%%%%%%%%
 
 \author{Robert Halliday} % First Last.
-\title{Electronics and Timing for the AugerPrime Upgrade and Correlation of Starburst Galaxies with Arrival Directions of Ultra High Energy Cosmic Rays } % Properly capitalized.
+\title{Electronics and Timing for the AugerPrime Upgrade and Correlation of Starburst Galaxies with Arrival Directions of Ultra High Energy Cosmic Rays} % Properly capitalized.
 \graddate{May 2019} % This is the date of graduation.
 
 \advisor{Corbin E. Covault} % First Last
@@ -301,8 +305,8 @@
  %\addcontentsline{toc}{chapter}{Preface}
  %
 
-\chapter*{Acknowledgements}
-\addcontentsline{toc}{chapter}{Acknowledgements}
+%\chapter*{Acknowledgements}
+%\addcontentsline{toc}{chapter}{Acknowledgements}
 % <Your Text>
 
 % These would both be in their own files of course and be inserted here with
@@ -323,8 +327,27 @@
 \include{./starburst/starburst}
 
 \chapter{Conclusion}
+In this work, we endeavored to design, develop and deploy new electronics, firmware, software and timing devices for the AugerPrime upgrade and adjacent experiments, as well as explore the correlation of UHECRs with Starburst Galaxies invoking the JFQ17 model for galactic magnetic fields. We have described the techniques and methods used to build GPS timing firmware and software in depth. An overview of Cosmic ray physics focusing on UHECRs was given. In this overview, we have reviewed the observable quantities and spectra in UHECR physics, as well as an in depth discussion of the dynamics of the air showers UHECRs cause. These topics led us into a review of modern experimental techniques, particularly focusing on the Pierre Auger Observatory and the Telescope Array, although other techniques besides those used in Auger and TA were also described to give context to the detector discussion. 
+
+Documenting the original work done for this thesis, we have given a complete description of the GPS timing integration in AugerPrime, as well as a discussion of the design choices made, both in terms of GPS timing integration and the operating system which runs the Upgraded Unified Board that will be deployed in all 1660 stations. In support of this, we review GPS binary messaging protocols, the operation of the GPS constellation, and Xilinx-based FPGA firmware design. An in depth explanation of the mechanisms behind AugerPrime's GPS software is given, along with a review of other important facets of the UUB's electronics.
+
+Moving on, we analyze the performance of the timing subsystems of the UUB. We show that the two receivers available for the upgrade have approximately equivalent performance with a slight edge for the SSR-6Tf. The results shown in this document were previously used in support of the recommendation to purchase this receiver, which has been executed. After discussing the receivers, we move on to the time-tagging module implemented in the UUB. Preceding the analysis to determine the timing resolution of the UUB, we show and discuss some of the operational elements of the time-tagging module. Two methods of measuring the timing resolution, one based on coincident showers and another based on direct cable synchronization, are described. The results of these two tests are shown, and we accept the result from cable synchronization, giving a timing resolution of $\sigma_{det}=8.44\pm\,.15\mbox{ ns}$, as the final timing resolution, noting that the results from the coincident shower method are in good agreement. 
+
+The discussion then transitions to the auxiliary timing hardware developed in this work in support of the AugerPrime upgrade and the general goals of both Auger and particle astronomy. We specifically discuss our original work on spatial correlations of GPS timing errors, in which we showed that timing errors over distances on the order of half a kilometer to two kilometers are not well correlated, but also that the PPS times between two separated receivers do not have slow rolling offsets. Subsequently, we give a description of the applications of TIM in CTA and for the Auger@TA cross calibration. 
+
+Finally, we show a method of determining suggestive correlation between the arrival directions of UHECRs and Starburst Galaxies. We backtrace a collection of cosmic rays through the JFQ17 model and look at their source probability distributions to see if they are more likely to come from the real SBG sky than a randomized isotropic SBG sky. We produce a sky map of the 486 back-traced cosmic ray's summed PDFs, and show that at 1.88$\sigma$, the CRs are more correlated to the real SBG sky than random SBG sky realizations.
+
+It is the hope of the author that the work contained in this document will help further the field of Particle Astrophysics and bring to bear burgeoning techniques such as event-by-event composition measurements, better muon counting, inexpensive high precision timing and magnetic field modeling. Going forward, we expect to see the field shift to a more composition aware, multi-messenger based and computationally assisted approach, aided by the aforementioned techniques. Furthermore we hope that these techniques will lead to the identification of sources and mechanisms of acceleration for UHECRs. Ultimately, we would like to see a future where the knowledge gained from UHECRs elucidates the nature of physics on the tiniest and grandest scales, which in turn provides a usable understanding of physical mechanisms for the benefit of all humanity.
+
+
+
 \appendix
 \include{./appendix/glossary}
+\include{./appendix/workpackages}
+\include{./appendix/bringdocs}
+\include{./appendix/triggerapp}
+\include{./appendix/structpack}
+
 %\graphystyle{plain}
 %\bibliographystyle{plain} 
 %\bibliography{references}

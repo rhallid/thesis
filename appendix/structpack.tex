@@ -1,0 +1,10 @@
+\chapter{Packing Structs in C}
+\label{structpack}
+Why is it that we cannot just, for example, \textit{memcpy} the message onto an initialized struct? As it happens, a painful lesson we learned very early on, is that when the $C$ programming language creates structs it organizes the information in them sequentially, as requested by the user, but perhaps not in a spatially intuitive manner. In order to efficiently access the stored information, it spaces the data in memory such that it will not have to access mixed elements within a 4 byte range. To give an example, if we request:
+\begin{verbatim}
+struct identification{
+int bignumber1;
+char middleinit;
+int bignumber2;  };
+\end{verbatim}
+and we take a look at the memory structure, upon accessing the 0th byte through the 3rd, we will get parts of \textit{bignumber1}, and if we access the 4th byte we will get \textit{middleinit}, but if we access the 5th byte, we will get 0. This is because $C$ has aligned \textit{bignumber2} such that it need not access mixed types within each 4 byte block. This pattern continues if we were to change \textit{middleinit} to three 2 byte short fields such that now there will be 8 bytes in between \textit{bignumber1} and \textit{bignumber2}, but only 6 of them will be filled. Hence, we really need a map from the scenario where data is serialized continuously, to that where the data is packed in an easily accessible struct. This is the purpose of the packing function.

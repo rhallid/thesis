@@ -1,0 +1,208 @@
+% !TEX root = ../main.tex
+
+\chapter{Cosmic Ray Sky: The State of the Field}
+In this chapter, the all particle spectrum will be reviewed via the famous Swordy plot, which will lead us through a brief discussion of its main features and their phenomenology. After discussing cosmic rays of all energies, I will explore how they reach their energies. This will start with the lower energies in earlier sections and move to the highest energy sources by the end. Finally, I will provide a discussion on how sources are constrained and the possible origins of UHECRs.
+\section{Spectrum}
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=5.2 in]{./images/swordy_all.png}
+\begin{singlespace}
+\caption[All Particle Spectrum (Swordy Plot)]{The all particle spectrum, often called the Swordy Plot \cite{realsswordy}, after Simon Swordy. This updated version is out of \textcite{swordyplot}.}
+\end{singlespace}
+\label{swordy}
+\end{center}
+\end{figure}
+
+
+Cosmic radiation in the broadest sense concerns all particles which enter Earth's atmosphere from space. The spectrum of cosmic radiation (or cosmic rays)  as measured spans about 12 orders of magnitude in energy and many more in flux. At the lowest end of the spectrum, the sources are relatively clear from power concerns; in particular they are believed to be injected by supernovae and supernovae remnants \cite{stanev}. Detectors of lower energy (below the knee) cosmic rays, see temporal modulation of the flux based on the solar magnetic fields, an effect commonly called ``solar wind''. Moving up in the energy, we see two distinct breaks in the all-particle spectrum (pictured in \autoref{swordy}). At slightly under 10$^{16}$eV, we see a break at what is called the ``knee'' into a steeper (harder) spectrum, and then a softening at the ``ankle''. 
+
+Below the knee (lower than 10$^{16}$eV), it is widely agreed that supernovae and supernovae remnants make up the sources of the largest portion of cosmic rays \cite{stanev, crapp}. At these energies, charged particles are deflected far too much to be a reliable marker of sources, but gamma rays especially along with neutrinos and x-rays paint a fairly clear picture of supernovae remnants being the most probable source \cite{stanev, sean, foteini}. Around the knee but before the ankle, the sources are slightly less clear since this is above the cutoff of major gamma ray and neutrino experiment's sensitivities, but is below the sensitivities of UHECR detectors. In this regime, first and second order Fermi shock acceleration (often just Fermi acceleration, or the Fermi mechanism) provide good explanations for the shape of the spectrum and the particular physical mechanisms of acceleration, although these mechanisms are common to multiple proposed sources (see \autoref{}). Further explanation of Fermi acceleration will follow in \autoref{fermi}. %Additionally, some of these particles may be from the same sources as 10$^{18}$+ eV cosmic rays, but accelerated less efficiently, or with less charge. 
+
+At the ankle and above, we enter the territory of Ultra High Energy Cosmic Rays, which the main body of work in this thesis 
+concerns. It is worth mentioning at this point, the final feature in the spectrum, which is the approximate cutoff at the GZK limit of $5\times10^{19}$eV. The Greissen-Zatsupin-Kuzmin (GZK) limit, is a particle-physics-based upper limit on the energy of long traveling protons. Observationally, this limit is obfuscated by the measured mixed composition of cosmic ray primaries, at which point one can think about it naively as a ``per proton'' energy limit \cite{futuregzk}. Sources in this energy regime become more mysterious, and are the topic of \autoref{sources}. 
+\begin{figure}[h!]
+\begin{center}
+\includegraphics[width=5.5 in]{./images/swordy_high.png}
+\begin{singlespace}
+\caption[High Energy All Particle Spectrum]{The high energy spectrum, multiplied by $E^3$ to allow for greater discernibility.}
+\end{singlespace}
+\label{swordyhigh}
+\end{center}
+\end{figure}
+\subsection{Fermi Shock Acceleration}
+\label{fermi}
+Fermi acceleration plays an important role in shaping the cosmic ray spectrum and provides an easy transition from below the knee to above it \cite{crapp}. The critical phenomena of shock acceleration are moving regions of relatively high magnetic field which can turn around and effectively accelerate particles. In this section, we will review the first order Fermi acceleration as an example, although second order Fermi acceleration is explained in a very similar way. The two major differences are that the first order mechanism assumes a plasma cloud of magnetic deflectors and allows for decreases in energy, while the second order mechanism assumes a wall of magnetic deflectors (referred to simply as a \textit{shock}) and always increases the energy of the incident particle.
+
+Shock regions must be relatively sparse in terms of density as collisions in them will thermalize particles, and the Fermi mechanism is specifically an explanation for non-thermal particles. These magnetic mirrors can take a number of different forms, although they are believed to usually be the bow shocks of large objects. For example, shock acceleration can be seen in the bow shock of even such a mundane astrophysical object as the Earth \cite{shocks}. In Fermi's original 1949 paper, he begins by considering a plasma cloud.
+
+Before discussing some useful and convincing features of Fermi acceleration in the first-order, let us first go through and show the energy gain from such a scenario, following the procedure in Chapter 11 of \textcite{crapp}.
+\begin{figure}[h!]
+\begin{center}
+\includegraphics[width=3.2 in]{./images/shockacc.png}
+\begin{singlespace}
+\caption[Shock Acceleration]{A simple diagram of the important quantities in Fermi acceleration.}
+\end{singlespace}
+\label{shockacc}
+\end{center}
+\end{figure}
+%First, it should be made clear that while the simple calculation performed here depends on only the velocity of the plasma cloud (or bow shock) and the incoming and outgoing angles of the particle, it is assumed that inside the cloud, the particle can be deflected many times through smaller diffuse ``collisions'' with effectively random internal magnetic fields. 
+%Now, looking at the energy of the incoming particle in the frame of the plasma cloud, we have:
+In the basic scenario of both types of Fermi acceleration, a particle comes in and is deflected in some way resulting in a net change in its velocity vector. To show this for second order Fermi acceleration, we start by looking at the energy of the incoming particle in the frame of the plasma cloud. This gives us:
+$$ E_1'=\gamma E_1(1-\beta \cos\theta_1). $$
+where $E_1$ is the incoming particles energy in the lab frame, and $\gamma$ and $\beta$ are the relativistic factors as commonly used in the literature of special relativity, and $\theta_1$ is the angle between the plasma cloud's velocity and the particle's velocity as measured in the lab frame. In what may seem like an obvious statement, magnetic fields do no work, or equivalently the magnetic field ``collisions'' are completely elastic, and therefore the total energy of the particle on the way out in the cloud's frame is the same as that on the way in, and so in the lab frame:
+$$ E_2=\gamma E_2'(1+\beta\cos\theta_2'),$$ 
+where all is as above less that $\theta_2'$ is the particle's outgoing angle as measured in the frame of the cloud. Combining these two for a hyper-relativistic particle (i.e. assuming the dispersion relation for a photon), the change in energy can be written as:
+\begeq{\frac{\Delta E}{E}=\frac{(1-\beta\cos\theta_1)(1+\beta\cos\theta_2')}{1-\beta^2}-1.}
+From here, we need only average appropriately over both angles. In the case of $\cos \theta_2'$, considering the particle can exit at any angle, and in this model none are preferred, $\langle\cos \theta_2'\rangle=0$. Phenomenologically, it is assumed that the probability of a deflection is proportional to the relative velocity between the cloud and the particle. This would come naturally by considering the ions within the cloud as little magnetic deflector dipoles. From this, the angular distribution of the deflected particle would be:
+$$\frac{dn}{d\cos\theta_1}=\frac{c-V\cos\theta_1}{2c},$$
+where we allow any incoming angle. This gives $\langle\cos\theta_1\rangle=-V/3c$, for a final result of:
+\begeq{\xi=\frac{1+\frac{\beta^2}{3}}{1-\beta^2}-1\approx \frac{4}{3}\beta^2. \label{shockresult}}
+Here, we give $\Delta E/E$ the convenient name $\xi$, for the fractional change in energy. This is perhaps the most basic but central result of the theory of second order Fermi acceleration. Given that $\beta$ is strictly nonnegative, \autoref{shockresult} shows that simple interactions, which are elastic in the frame of the plasma cloud, can give energy to particles in the lab frame. Here, we have made the assumption that the cloud will be non-relativistic, although the treatment can be extended to relativistic clouds. In fact, when this treatment is extended to relativistic sources, they can gain as much as a factor of $\gamma^2$ energy from their first interaction, which could be very large \cite{shocks}. It is also common to do this exercise for sheets of magnetic deflectors, resulting in first order Fermi acceleration. 
+%\begeq{\frac{\Delta E}{E}=\frac{1-\beta\cos\theta_1)(1+\beta\cos\theta_2')-\beta^2\cos\theta_1\cos\theta_2'}{1-\beta^2}-1}
+
+There is nothing in particular which stops a particle from undergoing this process multiple times, even within the same region, in which case we have the relation:
+$$E_n=E_i(1+\xi)^n,$$
+with $E_n$ the energy after the $n$th cycle, and $E_i$ the initial energy. From here, we can go a number of ways. By assuming a time per acceleration cycle, we can begin to consider how the age of the plasma cloud affects the maximum energy of a particle accelerated by it. Furthermore, it is hardly a stretch to invoke a probability per unit time of re-acceleration, and from this a power law spectrum comes out.  
+
+\section{Sources At The Highest Energies}\label{sources} %make sure you include a hillas plot and explain it, explain that it must show a power law spectrum
+As mentioned previously, the sources of the highest energy cosmic rays ($E>10^{18}$eV) are by no means obvious. It is still a very active topic of research, and the conclusions that are currently considered relatively concrete are more categorical than specific. To outline today's thinking on the topic, we will first discuss two of the easier conditions that are imposed on potential sources, namely power conditions (i.e. can a source actually produce enough UHECRs within a reasonable efficiency) and the Hillas Criterion, along with the Hillas plot. Briefly, the Hillas criterion compares the magnetic fields and radii of astrophysical objects in a magnetic containment scenario, to give a constraint on the energy of particles they could produce. 
+
+After discussing the two basic criterion, we will move on to a more specific discussion of the two primary acceleration scenarios, namely top down and bottom up, and then expand on the bottom up scenarios, which are currently more feasible (we will also elucidate that statement). Finally, we include a discussion of some of the hard facts about sources as we know them, namely the anisotropy of the highest energy cosmic rays, and their composition measurements.
+
+\subsection{Power Considerations}
+By considering the density of cosmic rays through integrating the spectrum, we can put a constraint on their energy density in the galaxy. Let's take, for ease of calculation, Gaisser's rough estimate of an energy density of $\rho_E=1$ eV/cm$^3$ \cite{crapp}. We then need to know the volume of the galactic disk, which can be estimated as :
+$$V_D=\pi R^2 d\approx \pi \times (15\mbox{ kpc})^2\times200\mbox{ pc}\approx4\times10^{66}\mbox{ cm}^3.$$
+Knowing this, we find the power by taking the total energy contained in cosmic rays, and dividing it by the average confinement time (a result of the leaky box model), also known as the mean residence time,
+ $$P_{CR}=\frac{V_D \rho_E}{\tau_R}\approx 5\times10^{40} \frac{\mbox{ergs}}{s}=5\times10^{33}\mbox{ W}.$$
+ Here, we have $\tau_R$ as the mean residence time of a cosmic ray in the galaxy and I have broken the calculation out of the somewhat archaic ergs/s into watts. Continuing to follow Gaisser's treatment of the topic, a 10 solar mass ejection originating from a type II supernova with an average velocity of $5\times 10^8$ cm/s and a frequency of 30 years gives a power of $P_{SN}=3\times10^{42}$ ergs/s or $3\times 10^{35}$ Watts. With what would seem to be a fairly low efficiency, supernovae can easily power all of the observed cosmic rays below the knee. This, however, says nothing about the physical mechanisms of acceleration it simply gives a necessary but not sufficient condition. Further analysis shows that there is no obvious mechanism for supernova blast waves to accelerate cosmic rays to \textgreater 10$^{18}$ eV, outside of their possible contribution to diffusive shock acceleration. Therefore, the calculation presented here pertains only to cosmic rays under approximately 100 TeV. 
+ 
+ Looking at higher energies using the same technique, we see the requirements tabulated in \autoref{powereqs}. These are for rays of up to 10 PeV, and for higher energies, particularly those $>$1 EeV, a calculation beyond the scope of this work is required. That said, the point here is that power constraints can be an important requirement to rule out sources before looking for an actual physical explanation for their acceleration mechanism. This technique is commonly applied to low and mid energy cosmic rays, but can be used for UHECRs in more advanced computational models.
+
+ \begin{table}
+
+ \begin{center}
+\begin{tabular}{|l|l|l|} \hline
+ Energy & Power (erg/s)  & Power (W)  \\ \hline
+ $>$ 100 TeV& \textasciitilde2$\times10^{39}$ &\textasciitilde2$\times10^{32}$ \\ \hline
+ $>$ 1 PeV& \textasciitilde2$\times10^{38}$ &\textasciitilde 2$\times10^{31}$ \\ \hline
+$>$ 10 PeV &\textasciitilde 5$\times10^{37}$ &\textasciitilde 5$\times10^{30}$  \\ \hline
+\end{tabular}
+\end{center}
+\caption[Power of Cosmic Accelerators]{Here the power required by cosmic accelerators to account for portions of the spectrum with increasing energies are given. These calculations are out of \cite{crapp}.}
+ \label{powereqs}
+\end{table}
+\subsection{Hillas Criterion}
+Examining the relationship between a source's ability to confine particles and the highest energy particles it can produce gives us the venerable Hillas Criterion. First published in 1984, Hillas looked at the Larmor radius, i.e. the radius in which a particle of constant velocity is confined in a magnetic field, and considered the constraints on astrophysical accelerators that this gives \cite{hillas}. This resulted in the Hillas plot or diagram, which has become a standard mechanism for displaying accelerators in the UHECR field \cite{stanev}. Following the original treatment in his paper, the Larmor radius for a hyper-relativistic particle is:
+$$ r_L=1.08\times\frac{1}{Z}\left(\frac{E}{10^{15}\mbox{ eV}}\right)\left(\frac{B}{1\mbox{ $\mu$G}}\right)\mbox{ pc}, $$
+where $r_L$ is the Larmor radius, $Z$ is the atomic number, $E$ is the energy of the cosmic ray in question and $B$ is the magnetic field of the potential accelerator. We can put this expression in terms of the energy and account for the net movement of the magnetic centers by adding a factor of $\beta$, representing their velocity. Taking the next step, we arrive at:
+$$\left(\frac{B}{1\mbox{ $\mu$G}}\right) \left(\frac{L}{1\mbox{ pc}}\right)>\frac{2}{Z \beta}\left(\frac{E}{10^{15}\mbox{ eV}}\right),$$
+in which $L$ is the length of the accelerator, and $\beta$ is the relativistic speed factor of its constituent shock producers. Finally solving this for the maximum energy, we produce what is known as the Hillas condition or criterion (which does not explicitly appear in the original paper, \cite{hillas}):
+\begeq{E_{\mbox{max}}\approx\beta Z e \left(\frac{B}{1\mbox{ $\mu$G}}\right) \left(\frac{R}{1\mbox{ kpc}}\right)\mbox{ EeV}.}
+In this particular version of it, out of \cite{stanev}, it is rewritten in EeV so as to be more useful in the context of UHECRs. From here, we can make a log-log plot in magnetic field versus radius and draw contours on it to represent the energy of particles produced along the contour. Such a plot is included in \autoref{hillasplot}.
+
+\begin{figure}
+\begin{center}
+\includegraphics[width=5.5 in]{./images/hillas_100EeVlines.png}
+\caption[Hillas Plot]{The Hillas Plot as interpreted in \textcite{stanev}, showing possible UHECR acceleration candidates organized by their magnetic fields and radii. The contours drawn here represent 100 EeV and the $\beta$s are those of the diffuse shock acceleration fronts of which the accelerator would be composed.}
+\label{hillasplot}
+\end{center}
+\end{figure}
+Again, it is important to emphasize that this is a necessary but not sufficient criterion for a cosmic accelerator to reach ultra high energies in its output spectrum under the assumption of Fermi acceleration.% Examining \autoref{hillasplot}, we can see that many astrophysical objects are ruled out at the highest energies, however the contours on this particular plot are drawn rather high at 100 EeV. That said, drawing contours at this energy appears to be the tradition started by Hillas in his original 1984 paper.
+\subsection{Top Down vs. Bottom Up}%you may not see GZK in top down models
+In the drive to understand the sources of UHECRs, there are effectively two over-arching categories of source proposals. There are those which involve the decay of supermassive relic particles, inflationary topological defects, or other Grand-Unified-Theory level particles, and those which invoke only the standard model of particle physics or less to explain acceleration via statistical or large astrophysical phenomena. 
+\subsubsection{Top Down Models}%exist as the particles that they require are often
+Many top-down models are conceived as natural byproducts of exotic theories in cosmology and particle physics. In a top down theory, a particle or topological defect decays and produces a spectrum of particles. In many models these decays should release in the range of 10$^3$-10$^7$ EeV of energy \cite{stanev}. 
+
+Topological defects are proposed to have originated in fluctuations during phase transitions in the early universe. As the energy density of the early universe drops through inflation, models of topological defects predict it necessary to have regions where, in order to preserve causality, energy will be trapped. While these regions come in dimension 0-3, only magnetic monopoles of approximate dimension 0 and cosmic strings of dimension 1 should decay/break symmetry to produce UHECRs \cite{stanev}. Some of the issues with such models include that the dynamics of the strings and monopoles become important, and that there should be modulation/suppression of the GZK cutoff. In some models, the cosmic strings and monopoles must actually meet (in the case of monopoles, it must meet its anti-particle), and given their rarity, this greatly suppresses the flux of UHECRs compared to what is observed \cite{tds}. It is also common in such models, to expect the topological defects to aggregate in the galactic halo. If this were true, then (in most models) the spectrum should not cutoff at extremely high energies, which is contrary to what is observed \cite{swordyplot}.
+
+On the other hand, relic particles, a form of non-thermal cold dark matter, could have been formed in a freeze-out of the early universe, perhaps at the surface of last scattering, and would then wander the universe in a metastable state. At some later time, they would decay into some quantum-number-conserving mix of particles. The energies estimated here are generally around 10$^{12}$ GeV, and the particles would be affected by gravitational pull \cite{tds,stanev}. Given this, it is expected that they would agglomerate at the centers of galaxies, in which case distinguishing them from AGN lobes/flares as accelerates could prove difficult. 
+
+Most importantly for both models, is that they would both be expected to produce large amounts of ultra high energy gamma rays and ultra high energy neutrinos. This is a serious problem given the current best results of the relevant experiments, namely Auger, TA and Hi-Res \cite{futuregzk,foteini}. 
+\subsubsection{Bottom Up Models}
+\label{bottomups}
+Bottom Up models of UHECR acceleration invoke only known physical phenomena, and inside of that almost exclusively electromagnetic mechanisms. As is laid out in the recent review by \textcite{stanev}, there are effectively only two physical mechanisms in this category: shock/statistical/Fermi acceleration and so-called ``one-shot'' acceleration. 
+
+Shocks are outlined and discussed in \autoref{fermi}, but to review, any sort of abrupt region of fairly high magnetic field (compared to its surroundings) can act as a region of shock acceleration. Through stochastic processes, particles are accelerated by what are effectively considered point deflectors. While energy is not gained or lost in each interaction in the shock ``cloud's'' frame, the particle experiencing deflections can ultimately gain energy through cycles of such deflections.
+
+One shot acceleration mechanisms (also sometimes called inductive acceleration) largely consist of ``compact spinning magnetized'' objects, which in effect is the long way of saying rotating young neutron stars and in particular magnetars. In this regime, an object simply produces a terrifyingly large electric field, which is not uniform by terrestrial accelerator standards, but is uniform enough, to take an entering particle and boost it up to UHECR energies in one shot (hence the name). There are also some scenarios where regions of radio-loud Active Galactic Nuclei (AGNs) can produce large enough electric fields to accelerate particles to ultra high energies, but these are oft constrained by the density of particles surrounding them (high particle density surrounding an accelerator implies likely collisions and therefore thermalization). 
+
+Since a detailed description of each possible source scenario is perhaps a tedious endeavor for both the reader and the writer, a table is provided below to describe the important aspects of the major (and some minor) source scenarios. The data in this table is compiled from the very straightforward review by Letessier-Selvon and Stanev (\cite{stanev}, 2011), from the review by Berezinksy (\cite{tds}, 1999) and most importantly the thesis by Oikonomou (\cite{foteini}, 2014) which is probably the most straight forward review of bottom up source candidates I have seen.
+\newpage
+\newgeometry{left=1.5cm,bottom=2.5 cm,top=2cm,right=1.5cm}
+%\fontsize{10}{10}
+%\selectfont
+
+\begin{table}[h!]
+\fontsize{10}{12}
+\selectfont
+\begin{center}
+\begin{tabular}{|p{.8in}|p{.6in}|p{.6in}|p{2.2in}|p{2.1in}|} \hline
+Source Type & Shock / Inductive & Matter Density Issues & Description & Main Issues \\ \hline
+AGN (radio-quiet) & Shock & Yes & AGNs in general are a rather appealing possible source being relatively abundant and very energetic.  & Radio Quiet AGNs rely on shocks at the end of their jets, however the matter density is too great for them to be likely UHECR producers. \\ \hline
+AGN (radio-loud) & Both \cite{shearedjets} & None in the extended radio lobes & Radio loud AGNs, and particularly those of type FR-II can have both shock acceleration sites and inductive acceleration sites where there is little matter density to stop acceleration. & There are fewer of these than radio-quiet AGNs, and so it should be harder for them to account for the total flux of UHECRs \cite{radioagn}. \\ \hline
+BL Lac Objects (subclass of Blazars) & Likely Shock, Possibly Inductive & Yes & Blazars are generally AGNs which are eating away at their accretion disks. Different configurations give different levels of variability in their emission. They are generally visible in the very high energy gamma-ray spectrum. A fairly recent paper by Murase et al. (\cite{muraseblazar}) points out that these can satisfy the Hillas Criterion but does not firmly pin down a physical mechanism of acceleration.  & The two main issues are that BL Lac objects are bright because of the matter they accrete, and so there are some issues with thermalization here. Additionally, they only barely meet the Hillas Criterion to get to the highest energies. \\ \hline
+Gamma Ray Bursts (GRBs) & Shock & Not significant & Gamma Ray Bursts are believed to be the product of a relativistic fireball in a super-luminous supernova. Since 1995, these have been pointed at as a tantalizing source of UHECRs, however they are surrounded in minor controversy as they were first introduced when the insufficient AGASA data came out, which indicated a flat spectrum and no cutoff at the highest energies \cite{waxmangrb,stanev}. & GRBs should produce large amounts of neutrinos in their interactions, since much of the relativistic fireball they are believed to consist of is leptonic. IceCube has, at this point, set constraints which make these somewhat less favorable \cite{foteini}. \\ \hline
+Waves in the Interstellar Medium (ISM)/ Intergalactic Medium(IGM) & Shock & No & A variety of phenomena are capable of producing large shocks in the interstellar medium, or even in the relatively dense intergalactic medium around superclusters. Galactic mergers are considered a likely source of IGM shock waves, while supernovae and other star formation adjacent processes have been suggested to cause shocks in the ISM local to their Starburst regions \cite{sbgshocks}. & Definitive proof of shocks that satisfy the Hillas Criterion has not yet been shown for the ISM in Starburst regions, although many sources say there will be qualifying shocks in the similar but less dense magnetohydrodynamic fluid of the general ISM. Murase et al. in 2008 \cite{muraseshocks} showed that the IGM can qualify for producing UHECRs around the ankle, although not at the highest energies.\\ \hline
+Magnetars/ Pulsars & Both, but primarily inductive & No in most cases & Pulsars, a subclass of which are magnetars, are rapidly rotating neutron stars and are the primary candidates for inductive acceleration. From a theoretical standpoint, these are particularly promising as they can be shown to produce a spectrum similar to observations \cite{pulsaruhecrs}.  &  The viability of rotating neutron stars as UHECR sources is at the mercy of neutrino observatory data. In the near future, they could be ruled out if no high energy neutrinos are found \cite{pulsarno}. \\ \hline
+\end{tabular}
+\caption[Source Summary]{Here I've summarized some of the possible sources of UHECRs and discussed their advantages and disadvantages as models.}
+\label{bigtab}
+\end{center}
+\end{table}
+
+\restoregeometry
+\newgeometry{left=1.5in,bottom=1in,top=1in,right=1in}
+%look into this iopscience.iop.org/article/10.3847/0004-637X/817/1/59/meta
+%One appealing feature is that these would produce a heavier composition of UHECRs, which is in line with recent observations.
+\subsection{Composition}
+\label{composition}
+From a first principles perspective, the composition of cosmic ray primaries is one of the most important features of both sources and showers. However, the difficulties in determining the composition of primaries via the signal from surface detectors or even fluorescence telescopes are numerous. This will be discussed in greater detail in \autoref{detectors}. That said, by looking at the maximum of particle production, denoted $X_{\mbox{max}}$, a statistical determination can be made, in particular over many data points, to find the average composition per energy. Doing so has been one of the triumphs of the Auger Observatory, and the data as they stand are a point of contention amongst contemporary experiments. 
+\begin{figure}[h!]
+\begin{center}
+\includegraphics[width=6.1 in]{./images/composition_auger.png}
+\caption[$X_{max}$ per Particle Type Contours]{Left: the averages of $X_{\mbox{max}}$ as a function of energy with contour lines drawn for their values based on 3 of the premier hadronic interaction models. Right: the standard deviation of $X_{\mbox{max}}$ as a function of energy, with contours drawn similarly to those on the left. This figure is taken from an Auger Collaboration publication (\cite{futuregzk})}
+\label{compositionplot}
+\end{center}
+\end{figure}
+A trend worth noting in \autoref{compositionplot} is the tendency for higher energy cosmic rays to be heavier in composition. If we look back at both the shock and inductive models of acceleration, both depend on $Z$, the atomic number directly, and so we expect this heavier composition at higher energies if these are correct. 
+
+One of the goals of the next generation of UHECR experiments is to better determine the composition of primaries. While Auger and TA currently attempt to find the composition on a per event basis, the errors are large enough that composition dependent anisotropy studies are not possible.  Being able to determine composition on an event by event basis would be a major advantage since it gives the ability to select high energy proton events, which should be deflected less than higher $Z$ nuclei in galactic and extragalactic magnetic fields.
+\subsection{Anisotropy}
+\figwrap{\label{firstharm}Pictured here is the first harmonic in the anisotropy decomposition done by the Auger Collaboration in \cite{anisotropy}}{./images/firstharm.png}{2.5 in}{r}{First Harmonic in Anisotropy Analysis}
+Even since the first days of UHECR physics, one of the main questions has been whether the origin of UHECRs is galactic or extra galactic. In the late 90's, some conclusions were attempted with AGASA, Haverah Park, Fly's Eye and even Volcano Ranch data \cite{tds}. Recently, the Auger Collaboration has published findings in Science (\cite{anisotropy}), which show that at the 5.2$\sigma$ level, there is a dipole anisotropy in the arrival directions of UHECRs pointing away from the galactic center. This result represents the most definitive proof to date that the origin of UHECRs is extragalactic. 
+
+The analysis represented in \autoref{anisotropyplot}, essentially breaks down the sky along the direction of right ascension (i.e. direction of the Earth's rotation, effectively corresponding to galactic longitude) into a decomposition of cosines and sines of different frequencies. An example of how the data fits to these decomposing basis functions is given in \autoref{firstharm}.
+\begin{figure}[h!]
+\begin{center}
+\includegraphics[width=6.1 in]{./images/anisotropy_auger.png}
+\caption[Anistropy Sky Map]{Pictured above is the sky map of UHECRs with energy $>8$ EeV smoothed by convolving with a 45\degree top hat function. This figure is taken from an Auger Collaboration publication (\cite{anisotropy})}
+\label{anisotropyplot}
+\end{center}
+\end{figure}
+
+
+The important result here is that the maximum of the dipole is pointing away from the galactic center, which implies that the origin of most UHECRs is extragalactic. For all of the source models I've introduced, less the top-down ones, this is effectively assumed, however the extragalactic nature of UHECRs should not be taken for granted as it was a hotly debated topic for decades \cite{hillas,tds}.
+
+Additionally, as mentioned above, the ``holy grail'' of anisotropy studies would be a composition and energy dependent anisotropy study with high statistics, which is one of the probable final products of the AugerPrime upgrade. 
+\newpage
+\newgeometry{top=.8in,bottom=.8in}
+\subsection{Concluding Thoughts: Cosmic Ray Spectrum and Sources}
+Through decades of work, the cosmic ray spectrum has been carefully measured up to energies approaching 10$^{21}$ eV, and as the exposure of the current generation of detectors increases, I expect that more features of the spectrum will be elucidated in much the same way that the ``second knee" has recently been. Furthermore, I expect that at least some of the mysteries regarding sources will be opened up by the coming upgrades and advances in technology, in particular the radio technique, the AugerPrime upgrade, CTA and IceCube Gen2. The nature of UHECR source candidates is such that they rarely only emit in the cosmic ray band, they also should be one or both of neutrino emitters and gamma ray emitters. With the advent of multi-messenger and higher aperture gamma ray and neutrino observatories, the field will get even closer to determining the correct source model.
+
+Additionally, I would like to comment that many in the field look at finding a single source model as the ``Occam's razor'' solution to the problem of ``where do UHECRs come from?". It seems to me and others that it may in fact be simpler if we consider that there are likely multiple types of sources with slightly different output spectra, but similar acceleration mechanisms. Since diffuse shock acceleration can happen at almost any size scale given a decently large magnetic field, there are likely multiple ways for a particle to reach the highest energies through bottom up models. 
+
+Finally, as far as top down models are concerned, I should note that it would be very interesting to look at the number of UHECR shower events as a function of long time periods. Perhaps 3 to 4 generations down the line, radio, optical or particle telescopes will have the aperture needed to observe showers on other planets, or perhaps other solar systems. If the origin of UHECRs truly is somehow attributable in full or in part to the decay of particles, then the simple laws of radioactive decay should apply, and one should be able to observe a decreasing exponential behavior in the number of events over time. 
+\restoregeometry
+\newgeometry{left=1.5in,bottom=1in,top=1in,right=1in}
+
+
+
+
+
+
+
+
+%where $r_L$ is the Larmor radius, $Z$ is the atomic number, $E$ is the energy of the cosmic ray in question and $B$ is the magnetic field of the potential accelerator. From here we can turn this equation around to give us the maximum energy from a particular accelerator, however we will need to look after a couple of details first. In order to truly account for the accelerating ability of an object, we have to account for the movement of the magnetic centers within the object. This involves correctly introducing a factor of $\beta$, and furthermore there is a factor of 2 that shows up in the criterion due to the radius being half the length of the circular accelerator. Putting these together, we arrive at:
+
+%in which $L$ is the length of the accelerator, and $\beta$ is the relativistic speed factor of its constituent shock producers. Turning this on its head and using the radius (in turn cancelling the 2), as is common practice, we arrive at what is now widely accepted as the Hillas condition or criterion (which does not explicitly appear in the original paper, \cite{hillas}):

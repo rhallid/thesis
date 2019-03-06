@@ -1,0 +1,94 @@
+\chapter{Bring-Up Documentation}
+\label{bringupdoc}
+\begin{figure}[H]
+\centering
+\includegraphics[width=4.5 in]{./images/petalinux.png}
+\caption[PetaLinux Config Screen]{This is the screen you are greeted with upon running \textit{petalinux-config} in your project directory. From here you can configure the operating system with whatever options you desire.}
+\label{petalinux}
+\end{figure}
+%Better than simply explaining the work we completed for the board bring-up, we can give here the final result, which was the documentation displayed in the following sections. 
+Here we document the process we developed for compiling and booting PetaLinux. This documentation outlines a method to bring-up PetaLinux for an arbitrary hardware image, given that it satisfies the requirements in Section \ref{prereqs}. Start to finish this process requires about 6 hours, only about an hour of which is foreground tasks; the majority of the time is spent downloading, installing and compiling. The document assumes the reader is competent with the Vivado\textsuperscript{TM} design suite, and at least vaguely familiar with Linux. Novice Vivado\textsuperscript{TM} users are encouraged to try the first few Zynq\textsuperscript{TM} hardware and software tutorials, after which the the author can respond to your questions via email if needed. %If you are not familiar with how to use a Bash terminal or the intricacies of Linux, there are a plethora of online resources and Stack Exchange is usually helpful in this way.
+\section{Installing the Environment}
+\subsection{Necessary Downloads}
+\begin{itemize}
+\item VMware Player ($75 MB$)
+\subitem Found on the VMware websites downloads, free to use for non-commercial purposes
+\item CentOS 6.6 i386 ($3.6 GB$)
+\subitem Download from ``older versions'' area, make sure you get i386 and NOT x86\_64
+\item Vivado\textsuperscript{TM} and SDK 2014.4 for Linux ($4.9 GB$)
+\subitem Can be acquired off the Xilinx website under the Downloads section
+\item PetaLinux SDK ($1.2 GB$)
+\subitem Located in a different section of the Xilinx Downloads
+\item TeraTerm or equivalent serial terminal emulator
+%\item Digilent Cable Drivers ($2MB$)
+\end{itemize}
+
+\subsection{Necessary Packages}
+\label{pack}
+Use ``yum" to install these packages after booting the VM and before installing anything else: \\
+\nohyphens{dos2unix iproute gawk gcc git gnutls-devel net-tools ncurses-devel tftp-server zlib-devel flex bison libstdc++.i686 glibc.i686 libgcc.i686 libgomp.i686 ncurses-libs.i686 zlib.i686 redhat-lsb}
+
+\subsection{Necessary Prerequisites}
+\label{prereqs}
+\begin{itemize}
+\item .hdf Hardware Description File from Vivado\textsuperscript{TM}
+\subitem Found in the SDK directory in the Vivado\textsuperscript{TM} project folder
+\subitem \textbf{Design Requirements:}
+\subitem Must have TTC enabled (Under MIO Configuration for the Zynq\textsuperscript{TM} PS  in Vivado\textsuperscript{TM})
+\subitem Must have DDR enabled (Follow the first two Zynq Hardware tutorials that come with the board)
+\subitem Should use PS UART (Also in first two Zynq HW tutorials)
+\item .bit Bitstream file from Vivado\textsuperscript{TM}
+\subitem Can be exported separately from Vivado\textsuperscript{TM} 2014.4
+\end{itemize}
+
+\subsection{Installation Procedure}
+
+\begin{enumerate}
+\item Install VMware Player
+\item Create a VM with the CentOS 6.6 image (must be 32-bit), at least $40GB$ should be allotted.
+\subitem At this point the user will want to open a terminal in the VM and assume superuser priveleges:
+\subsubitem Either use the command ``su'' to log in as root
+\subsubitem Or add the the user to the sudoers list and use ``sudo'' in the following steps as appropriate.
+\item Install the packages listed in section \ref{pack}.
+\subitem run ``yum install $<$package list$>$''
+\item Unzip the .tar.gz file for Vivado\textsuperscript{TM} and SDK.
+\item Open the directory that the installer was unzipped into and run ./xsetup with root priveleges.
+\item Follow the steps and be sure to install Vivado\textsuperscript{TM}, SDK and the cable drivers. Choose the options for Vivado\textsuperscript{TM} Design Edition, and add SDK and Cable drivers. It will by default install to the correct location, /opt/Xilinx/.
+\item\nohyphens{ Run the PetaLinux 2014.4 installer with root privileges (``./petalinux-v2014.4-final-installer.run /opt/pkg/'' to install to /opt/pkg/. Be sure to ``mkdir /opt/pkg/'' before attempting install).}
+\end{enumerate}
+\section{Configuring a Board for Boot Up}
+\subsection{Setting up Working Environment}
+\begin{enumerate}
+\item Change directories to the Vivado\textsuperscript{TM} install directory (/opt/Xilinx/Vivado/2014.4/) and ``source ./settings32.sh''
+\item Change directories to the PetaLinux install directory and ``source ./settings.sh''
+\subitem Ignore the `no tftp' error, it does not matter for our purposes.
+\end{enumerate}
+\subsubsection{Configuring and Building PetaLinux}
+\begin{enumerate}
+\item In a directory of the user's choosing, run ``petalinux-create -{}-type project -{}-template zynq -{}-name $<$name of project$>$'' with the product name inserted without spaces. It will create a new directory named after the project in the directory. The directory it creates is called the ``project directory''
+\item Place the Bitstream (.bit) and Hardware Description File (.hdf) in a subdirectory to the project's main directory. We  call it ``./SUPPORT'' for the purposes of this documentation.
+\item In that directory run ``petalinux-config -{}-get-hw-description=./SUPPORT/''
+\item This should take a minute, at which point kernel and hardware settings can be configured. Other configuration options are available and can be found in the PetaLinux command line reference(\cite{commands}). The default settings should be fine in most cases. Exit and save. It will take another minute to finish configuration. 
+\item Now we are ready to build, simply run ``petalinux-build''
+\item (OPTIONAL) PetaLinux SDK can package the project for booting off an SD card or flash memory. 
+\\Run \nohyphens{``petalinux-package -{}-boot -{}-fsbl ./images/linux/zynq\_fsbl.elf -{}-fpga $<$bitstream file$>$ -{}-u-boot''.}
+\end{enumerate}
+\subsection{Booting The Build}
+In this documentation we will only cover booting off of JTAG. Documentation for booting off of the SD card can be found in the Reference Guide \cite{reference}.
+
+It is also worth noting that VMware player handles whether the physical computer or the virtual computer has which component of the UUB plugged into it. That is, if we want to run TeraTerm in Windows and run the PetaLinux console on our VM we can do so by connecting the appropriate devices (Cypress USB UART is the standard I/O, the JTAG is the future devices Digilent USB) in the top right panel of the VM. 
+\begin{enumerate}
+\item Plug in all the required cable for the board. Be sure to have an output to a terminal. Start the Terminal emulator such as TeraTerm after powering on the board.
+\item Run these commands in order, pausing between each:
+\subitem petalinux-boot -{}-jtag -{}-fpga -{}-bitstream $<$bitstream file (.bit)$>$
+\subitem petalinux-boot -{}-jtag -{}-fsbl ./images/linux/zynq\_fsbl.elf -{}-extra-xmd ``init\_user''
+\subitem petalinux-boot -{}-jtag -{}-u-boot
+\subitem petalinux-boot -{}-jtag -{}-kernel
+\item The user should now see the terminal emulator starting to show the output of the board booting Linux. Login with username: ``root'' password: ``root''. 
+\end{enumerate}
+\subsection{Adding Programs}
+To add programs to the PetaLinux kernel, we need only run this command in the project directory:
+\begin{verbatim}
+petalinux-create -t apps -n <program name> --enable
+\end{verbatim}
+where we replace $<$program name$>$ with whatever we are naming the application. For porting programs from the UUB, this was done for each component program, and then they were debugged on an actual UUB (not an evaluation board). With this workflow, the program will be compiled every time we compile PetaLinux, although we can use the petalinux-build command to build individual applications.

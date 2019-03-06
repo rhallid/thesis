@@ -1,11 +1,139 @@
 % !TEX root = ../main.tex
-
+\begin{singlespace}
 \chapter{Correlation of UHECR arrival directions with Starburst Galaxies}
-In this chapter, we will investigate the correlation of Starburst Galaxies with the arrival directions of UHECRs invoking the JF12 model with uncertainties to give a physical account of the spread of Galactic and Extragalactic Magnetic Fields (GMF and EGMF, respectively) \cite{jf12,sean}. We begin by explaining some of the goals of charged particle astronomy and evaluating the Hillas Criterion on Starburst Galaxies.
-\section{Charged Particle Astronomy}
-\subsection{SBGs and the Hillas Criterion} %see waxman 2006 paper 
+\end{singlespace}
+In this chapter, we will investigate the correlation of Starburst Galaxies (SBGs) with the arrival directions of UHECRs invoking the JF12 model with uncertainties to give a physical account of the spread of Galactic and Extragalactic Magnetic Fields (GMF and EGMF, respectively) \cite{jf12,sean}. We begin by explaining some of the goals of charged particle astronomy and evaluating the Hillas Criterion on Starburst Galaxies.
+\section{SBGs, Shocks and the Hillas Criterion} %see waxman 2006 paper, starwinds, see shockvel for velocity of shocks %\bigcite{sbghillas}, \bigcite{starwinds}
+Interest in exploring Starburst Galaxies as possible source candidates for UHECRs has been growing in recent months, in part due to the paper by \bigcite{starburst} (to be discussed in \autoref{origburst}). Amongst their favorable characteristics are a large amount of injected low energy primaries from supernovae, large shocks driven by their stellar creation engines and large regions of high measured magnetic field \cite{starwinds,waxmansbg}. In this section, we will discuss the recent Starburst correlation result, then some of the relevant parameters of SBGs for UHECR acceleration.
+
+In terms of the Hillas Criterion (described in \autoref{hillas}), optimistic estimates give a .03 Gauss magnetic field over a scale of ``hundred of parsecs", which satisfies the Hillas criterion for acceleration up to 100 EeV (see \autoref{hillasplot}, \autoref{sbghillas} and \textcite{waxmansbg}). The basic idea behind attempts to qualify SBGs as cosmic accelerators come from looking at the hydrostatic equilibrium that shapes the Starburst Region. Models and discussions such as those in \bigcite{waxmansbg}, \bigcite{starwinds} and \bigcite{sbghillas} revolve around quantifying the balance of turbulent pressures, cosmic ray pressures and magnetic fields in SBG regions. The particular balance of these gives the maximum magnetic field available in the region, and so there is some room in the parameter space for SBGs to be better or worse accelerators, as shown in \autoref{sbghillas}.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=5.9 in]{./images/sbghillas.pdf}
+\caption[Hillas Diagram for SBGs]{In this figure from \bigcite{sbghillas}, we have a Hillas plot filled in with SBG data. Relevant to us are the triangles and squares, which represent the SBG parameters as given in \bigcite{waxmansbg}. The empty boxes represent a subsample of ``normal" galaxies (not Starburst), the triangles represent SBGs, and the filled boxes represent ``extreme" Starburst galaxies. The gray boxes and triangles represent an optimal distribution of pressures amongst the pressures shaping the region i.e. the distribution of pressures in which the magnetic field, cosmic ray pressure and turbulent pressure are in equipartition. The black boxes and triangles represent the most conservative scenario, where the magnetic energy is minimized to just barely keep the SBGs shape. The ``H" line represents the contour for acceleration to a maximum of 100 EeV and the ``D" line represents the limit at which radiation losses are in equilibrium with shock acceleration, i.e. the ``end-of-steam" for SBGs.}
+\label{sbghillas}
+\end{figure}
+
+In terms of source requirements, SBGs have a higher rate of star formation than other galaxies, it follows that they should have a higher rate of supernovae \cite{sbgprod,sbgprodlow}. Supernovae act as an important injection mechanism for lower energy cosmic rays, a fraction of which are accelerated to UHECR energies in some models (see \autoref{power}). Furthermore, supernovae can create shocks which can drive larger galactic winds \cite{starwinds}. In some sense, this provides dual mechanisms of acceleration, where a UHECR could be accelerated near the heart of a star forming region by high magnetic fields and local shocks, or in a less dense region by supernova-driven galactic winds. If we look at the observed speeds of shocks in SBGs, we find they are on the order of 500km/s at most, giving $\beta\approx$1/600 \cite{shockvel}. While this does tighten the acceleration scenario somewhat, \autoref{sbghillas} shows that there is room in the statistical mechanics of SBGs to possibly accommodate relatively low local shock velocities. 
+\begin{singlespace}
+\section{Previous Starburst Galaxy Correlation Results from Auger}
+\end{singlespace}
+\label{origburst}
+In \bigcite{starburst}, the authors implement a maximum likelihood analysis to determine the percentage of UHECRs which come from Starburst galaxies. They fix a Fisher distribution to each SBG and make its amplitude proportional to its 1.4 Ghz emission, while allowing a background isotropic flux. The maximum likelihood test has two free parameters: the percentage of UHECRs coming from SBGs (anisotropic fraction) and the angular width of the Fisher distributions. They find that the optimal size of the distributions is $13\degree \,\, +4\degree/-3\degree$ with an anisotropic fraction of 10\%$\pm$4\%, which gives a significance of $4\sigma$ over isotropy. The parameter space over which they optimized is shown in \autoref{crpropasamp}.
+
+\begin{figure}[h!]
+\centering
+\includegraphics[width=2.9 in]{./images/parspace.png}
+%\includegraphics[width=2.9 in]{./images/122176797200.pdf}
+\caption[Results of Previous Starburst Analysis]{The parameter space over which the maximum likelihood analysis is done in \bigcite{starburst}.}
+\label{crpropasamp}
+\end{figure}
+
+Their analysis also includes gamma ray emitting Active Galactic Nuclei, which they test in the same way. This results in a lower significance of 2.7$\sigma$. After this test, they combine the populations and test the significance of SBGs with AGNs and anisotropic sky versus just AGNs and an isotropic sky, which they find to not be significantly correlated.
+
+
 \section{Magnetic Field Modeling and JF12}
-\section{Starburst Test Methods}
-\section{Starburst Test Results}
+\label{jf12}
+One of our objectives in this work is to consider the impact of galactic magnetic fields on the propagation of individual UHECRs detected by Auger. To the extent that we can accurately model the galactic magnetic field, we can back-trace UHECRs to their sources. 
+In order to do this, we will use the Jansson-Farrar Magnetic Field Model of 2012 (JF12, \cite{jf12}) which we will use as a tool for simulating the physical destination parameter space for UHECRs. In this section, we will introduce the model's main components and discuss their scales and strengths briefly. We then give a brief overview of how the parameters of the model were obtained. The main field components are:
+\begin{itemize}
+\item Disk Component- this component physically represents the `main' portion of the model, giving fields in the $\hat{r}$ and $\hat{\phi}$ directions within about 20 kpc of the center of the galaxy. It also includes a component which extends these contributions into the halo.
+\item Out of Plane Component- empirically motivated, this portion attempts to describe the `X' shaped field seen in observations by giving a component that is purely perpendicular to the galactic plane. Physically, it is largely within the size of the disk component.
+\item Toroidal Halo Component- this component captures much of the field in the halo, operating at relatively large distances outside of the disc in the plane ($\sim$20 kpc or greater) as well as above and below it. 
+\item Striated Fields- the striated fields use models of relativistic electron content to give a component based on the fields they create. In effect, these contributions are random and on the order of 1 kpc. 
+\end{itemize}
+The estimation for these parameters is based on Faraday rotation measures and polarized synchrotron emission, which respectively give measures of the field components that are parallel and perpendicular to the observer. These measures are integrated across the sky, so the parameter estimation must take this into account. The JF12 model largely bases its Faraday rotation and synchrotron emission measurements on WMAP7 data, and uses the GALPROP model for relativistic electron content. In this work we will use a modified version of the model developed in the HEA group at CWRU, which adds turbulent striated fields and re-analyzes the uncertainties on the 22 field parameters. The model is fully described in the work by \bigcite{sean}, and we will refer to the full, modified model as the JFQ17 magnetic field model.
+
+
+\section{Starburst Test Methods}%two pictures of test events
+\label{stest}
+In this work, we set out to perform a test of the correlation of Starburst Galaxies with the arrival directions of UHECRs as modulated by back-tracing through the JFQ17 model (\cite{jf12,sean}, see \autoref{jf12} for overview). We take the magnetic field model as given and use a modified implementation of CRPROPA to perform the back-tracing \cite{crpropa}. CRPROPA is a simulation tool which allows back-tracing through galactic and extragalactic magnetic fields; this back-tracing effectively runs the particle's dynamics backwards in time to determine a possible initial position, or space of possible initial positions. 
+
+Per \bigcite{sean}, we sample magnetic field realizations from distributions of the JFQ17 model's parameters. We explicitly use the expected uncertainties on the model's parameters to generate random deviates. By propagating cosmic rays over numerous realizations of the JFQ17 model, we probe the space of possible source directions to determine the most likely region, and ultimately the probability distribution corresponding to this region. We have found that 2000 traces per cosmic ray provides healthy, convergent contours, while freeing up computing time to complete more events. Example events are shown in \autoref{crpropasamp}.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=5.9 in]{./images/80184305000.pdf}
+\includegraphics[width=5.9 in]{./images/122176797200.pdf}
+\caption[CRPROPA+JF12+Quinn Modifications Samples]{Here we show two samples of back traced cosmic rays displayed on a flat-sky background. The stars represent the measured arrival directions upon detection by Auger. Top: Event 80184305000, with energy $\sim$115 EeV. Bottom: Event 122176797200 with energy $\sim$44 EeV.}
+\label{crpropasamp}
+\end{figure}
+
+Each Cosmic Ray produces a normalized Probability Distribution Functions (PDF) which has a spread and morphology determined by the energy and the fields encountered while back-tracing. Most events are approximately circularly symmetric around the centroid of the PDF, but some events, such as that displayed in the right panel of \autoref{crpropasamp}, have asymmetric morphologies. Mechanically, we use a python script to take the back-traced source location of each of the 2000 traces for each CR, and form the PDF based on the density of source directions on the galactic sky. Ultimately, this PDF is expressed in a 513 by 513 entry array packaged in a .npz file (a \textit{numpy} binarized format) with its one dimensional axes arrays. 
+
+For computational efficiency, we appropriately sum the PDF from each CR to form a full sky normalized PDF. This is accomplished by interpolating the map of points from each CR's PDF and sampling it on a full sky grid with a resolution of 0.1\degree in latitude and .2\degree in longitude\footnote{This method of stacking PDFs gives an $\sim$50000 times computational efficiency improvement over evaluating the sky on each CR's PDF individually.} (the asymmetry gives a computationally square matrix which is required for interpolation). This grid is then saved in .npz format and used as the standard CR sky modulated by the JFQ17 model. 
+
+Then for any candidates source distribution, we evaluate the sky, real or isotropic (i.e. randomly generated), against the full sky PDF produced from the back-traced PDFs of our catalog of UHECRs. Ultimately, this produces an array of full sky PDF values. We then take the mean of these evaluations and use it to calculate a test statistic as shown below.. 
+
+The statistical test we will perform is a $\chi^2$-like test, where we evaluate the stacked galactic CR PDF for a number of simulated isotropic skies to create a $\chi^2$-like distribution. We will use:
+\begeq{
+	\chi^2_{like}=\left(\frac{\langle \mbox{PDF(Sky)}\rangle}{\langle \left[\langle \mbox{PDF(Iso Skies)}\rangle\right]\rangle}\right)^2,
+	\label{chi2like}
+}
+where the numerator is the square of the mean of the PDF evaluations for a given sky and the denominator is the squared mean of the mean PDF evaluations for isotropic skies. The p-value of this test will be the number of skies with a greater $\chi^2$-like statistic than the real Starburst sky. Lastly, we convert this p-value to a Gaussian equivalent significance (sometimes referred to as 1-sided Gaussian significance). 
+
+For the input data, we use Auger's \textit{Herald} data product of the highest energy cosmic rays, with the recommended quality cuts, and the \textgreater 40 EeV cut made in parity with \bigcite{starburst}. Outside of a 60\degree zenith cut, these cuts are all based on performance parameters of Auger. For the real sky catalog of SBGs, we use those taken directly from \textcite{starburst}; this is the catalog of all known SBGs within 250 Mpc with available microwave emission data. 
+%\begin{figure}[h!]
+%\centering
+%
+%\includegraphics[width=2.9 in]{./images/80184305000.pdf}
+%\includegraphics[width=2.9 in]{./images/122176797200.pdf}
+%\caption[CRPROPA+JF12+Quinn Modifications Samples]{Here we show two samples of back traced cosmic rays displayed on a flat-sky background. The stars represent the measured arrival directions upon detection by Auger. Left: Event 80184305000, with energy $\sim$44 EeV and 3\degree deflection from measured arrival to centroid of the propagated PDF. Right: Event 122176797200 with energy $\sim$115 EeV and deflection 8.8\degree.}
+%\label{sbghillas}
+%\end{figure}
+ 
+\section{Preliminary Starburst Test Results}%picture of sky with SBG, big sky picture (first to head off chapter), dtheta picture, final chi2like 
+\begin{figure}[H]
+\centering
+\includegraphics[width=5.99 in]{./images/crsky_final.png}
+\caption[CR Sky + JFQ17 Modulation]{In this sky map, we have summed the PDFs of all CRs and shown them as a sky map on a Mollweide projection.}
+\label{crsky}
+\end{figure}
+In total, we simulated 486 events from the catalog of 710 events which passed the \textit{Herald} cuts. We plot the distribution of the $\chi^2$-like statistic below in \autoref{chi2}, along with the CR and Starburst skies juxtaposed. We also show a blown-up CR+JFQ17 sky in \autoref{crsky}, which implicitly shows Auger's acceptance, giving a final coordinate sanity check. Proceeding as described in \autoref{stest}, we find a p-value of .17, corresponding to a Gaussian equivalent significance of 1.88$\sigma$. 
+\begin{figure}[H]
+\centering
+\includegraphics[width=5.9 in]{./images/crcorr_final.png}
+\includegraphics[width=5.9 in]{./images/chi2.pdf}
+\caption[Starburst Correlation Test]{Top: a sky map of the CR+JFQ17 sky with Starburst Galaxies placed as purple stars on it. Bottom: a plot of our $\chi^2$-like distribution, with the statistic for the real Starburst Sky marked in orange. The values of the statistic come from \autoref{chi2like}.}
+\label{chi2}
+\end{figure}
+
+As an additional byproduct of our analysis, we have the angular deflections plotted in \autoref{dthetas}. The average deflection of our sample is 5.2\degree $\pm$ 3.3\degree. 
+\begin{figure}[H]
+\centering
+\includegraphics[width=3.0 in]{./images/dthetas.pdf}
+\caption[Angular Direction Change]{The deflection in arrival direction from the centroid of the PDF for the cosmic rays tested.}
+\label{dthetas}
+\end{figure}
+
 \section{Conclusions}
+Looking at the results in the previous section, we see that to a moderate significance, our results suggest and support the conclusion that UHECR arrival directions are correlated with Starburst Galaxies. This correlation is not definitive at the $\sim$2$\sigma$ level, but does not contradict the result of \bigcite{starburst}. We find that the average angular deflection is 5.2\degree $\pm$ 3.3\degree, with a maximum of 18\degree; these deflection are in agreement with the aforementioned Starburst results which showed a 13\degree  (+4\degree/-3\degree) optimal distribution width for the source SBGs. 
+
+At this time, however, our result is not directly comparable to that in \textcite{starburst} since we have effectively asked the question ``how significant is the entire CR population's correlation with SBGs having invoked a magnetic field model?" while \bigcite{starburst} provides that a relatively small portion of the CRs come from SBGs, with the rest to come from an otherwise isotropic sky. Work towards making these results directly comparable will be discussed in the coming subsection.
+\subsection{Future Directions}
+Some possible future directions of research using the JFQ17 model and the techniques employed for this test include:
+\begin{itemize}
+\item Population-wise studies: in \bigcite{starburst}, the test is effectively SBG + isotropic sky versus isotropic sky, whereas what we have done here is just SBG versus isotropic sky. To make these results more comparable, we can take the upper $\sim$10\% most correlated CRs and compare this to those for an isotropic sky. This would provide a much more directly comparable test.  
+\item Include full vertical and horizontal catalog of CRs: in this work, we chose to follow the catalog choice in \bigcite{sean} since computational resources to evaluate the \textgreater 5000 events chosen in \textcite{starburst} were not available. The addition of inclined showers with zenith angles down to 80\degree provides a wealth of otherwise-ignored events. The constraint on performing this analysis would be the balance of time and computing resources required. 
+\item Systematic Energy Deflection studies: one aspect of this analysis which was not taken into account was the systematic energy uncertainties of the Auger data. These are $\sim$15\% and would widen or tighten the PDFs found in this work. By simulating upper and lower bounds on the energy, we could get a handle on how affected the p-value derived here is by the energy uncertainty.
+\item Composition Dependent Back-Tracing: for the analysis shown above, we have assumed every primary particle is a proton. As shown in \autoref{composition}, Auger's measurements are no longer compatible with a proton dominated composition at the relevant energies. Unfortunately, we will not have event-by-event composition measurements until AugerPrime is fully implemented. Once these figures are available, however, it would greatly benefit this analysis to include the composition of the primary particles since their $Z$ values directly affect their magnetic deflection.
+\end{itemize}
 %\subsection{Source Identification Outside of Acceptance Range}
+%gonna do some unwise testing here
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

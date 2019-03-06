@@ -1,70 +1,71 @@
 % !TEX root = ../main.tex
-
-\chapter{Timing for AugerPrime}
+\begin{singlespace}
+\chapter{Time-Tagging and GPS Performance for AugerPrime}
+\end{singlespace}
 \label{augtiming}
-In this chapter, we will investigate the timing performance of two aspects of the AugerPrime upgrade. To set the stage, we will have a discussion of some timing basics. After this, we move on to the topic of GPS receiver selection for AugerPrime. We motivate this endeavor, discussing the need for a new receiver selection due to availability, and then talk about the absolute, relative and temperature timing tests done for the M12M and SSR-6Tf receiver models. To conclude this section, we justify our recommendation of the SSR-6Tf, which has been accepted and acted on by the collaboration. 
+In this chapter, we will investigate the timing performance of two aspects of the AugerPrime upgrade. To set the stage, we review some timing basics. After this, we move on to the topic of GPS receiver selection for AugerPrime. We motivate this endeavor, discussing the need for a new receiver selection, and then describe the absolute, relative and temperature timing tests done in the lab at CWRU for the M12M and SSR-6Tf receiver models. To conclude this section, we justify our recommendation of the SSR-6Tf, which has been accepted and acted on by the collaboration. 
 
-The measurement for the time resolution of the upgraded SD stations is then outlined. We give our methods for two different measurements of the time resolution, one of which requires us to calculate a physical error factor for arrive directions of triggering showers, and the other which involves using a cable to time synchronization pulses between two detectors. We find the time resolution to be $\sim$8ns and that both methods are in agreement. 
-\section{Timing Basics}
-In order to keep time in any context, we must first start with a clock. Even back to the days of Galileo or John Harrison, clocks have been based on the simple principle of an oscillator, keeping time by `ticking' at a precise rate. In today's context, most clocks are kept by electronic oscillators with a variety of methods employed to generate the signal. In the case of the UUB, this is an Abracon ABLJO-V-120.000MHZ-T2, which uses the 3rd overtone of a quartz crystal to keep time. By modulating the voltage across this VCXO, we can control its vibrational frequency. 
+The measurement for the time resolution of the AugerPrime SD prototypes in the engineering array is then described. We give our methods for two different measurements of the time resolution, one of which requires us to calculate a physical error factor for arrive directions of triggering showers, and the other which involves using a cable to time synchronization pulses between two detectors. We find the time resolution to be $\sim$8ns and that both methods are in agreement. 
+\section{Time-Tagging Basics}
+In order to keep time in any context, we must first start with a clock. Even back to the days of Galileo or John Harrison, clocks have been based on the simple principle of an oscillator, keeping time by `ticking' at a precise rate. In today's context, most clocks are kept by electronic oscillators with a variety of methods employed to generate the signal. In the case of the UUB, this is an Abracon ABLJO-V-120.000MHZ-T2 (\cite{vcxo}), which uses the 3rd overtone of a quartz crystal to keep time. By modulating the voltage across this VCXO, we can control its vibrational frequency. 
 
-The field of air shower physics usually requires its time-tagging hardware to accomplish two tasks. First, it must time the occurrence of events, which can be broadly described in terms of timing the rising edge of a logic pulse. Generally, the main task of trigger hardware and firmware is the generation of a logic pulse which corresponds to the time of the trigger, often offset by some known amount. The second task of a time-tagging module in an experiment such as Auger, is to accomplish frequency distribution, which is technical jargon for synchronizing clocks at a very fine level.
+The field of air shower physics usually requires its time-tagging hardware to accomplish two tasks. First, it must time the occurrence of events, which can be broadly described in terms of timing the rising edge of a logic pulse. Generally, the main task of trigger hardware and firmware is the generation of a logic pulse which corresponds to the time of the trigger, often offset by some known amount. The second task of a time-tagging module in an experiment such as Auger, is to accomplish frequency distribution, i.e. synchronizing clocks at a very fine level across many stations.
 
-For frequency distribution, Auger uses the GPS constellation's space-borne bank of atomic clocks. Using the techniques outlined in \autoref{gps}, the GPS receiver can calculate the time of a GPS second to a handful nanosecond's accuracy. These GPS seconds are timed by the receiver's 1PPS, which comes in the form of a logic pulse. By counting the ticks of an oscillator from when a 1PPS comes in to when an event occurs, and then from the event to the next 1PPS, we can interpolate to find the point in the second when the event occurred. This process is encapsulated in \autoref{insec} below. 
+To synchronize stations for time-tagging, Auger uses the GPS constellation's space-borne bank of atomic clocks. Using the techniques outlined in \autoref{gps}, the GPS receiver can calculate the time of a GPS second to a handful nanosecond's accuracy. These GPS seconds are timed by the receiver's 1PPS, which comes in the form of a logic pulse. By counting the ticks of an oscillator from when a 1PPS comes in to when an event occurs, and then from the event to the next 1PPS, we can interpolate to find the point in the second when the event occurred. This process is encapsulated in \autoref{insec} below. 
 \begeq{
   \label{insec}
   t_e=\frac{N_e}{N_{i+1,PPS}-N_{i,PPS}}.
 }
-Here, we have $N_e$, the number of counts up to an event, $N_{i,PPS}$ the counter value at the preceding PPS, and $N_{i+1,PPS}$, the counter at the current (i.e. subsequent) PPS. This gives us $t_e$, the time (in seconds) of an event within a GPS second, and then we can simply use the telemetry messages from the receiver or the counter from the time tagging module to put together the GPS second. There is some difficulty in finding the number of leap seconds to date, but this can be requested from the receiver periodically. With these pieces of information, we can put together a full decimal time-tag of when an event occurs, allowing reconstruction of air showers and comparison with data from other experiments.
+Here, we have $N_e$, the number of counts up to an event, $N_{i,PPS}$ the counter value at the preceding PPS, and $N_{i+1,PPS}$, the counter at the current (i.e. subsequent) PPS. This gives us $t_e$, the time (in seconds) of an event within a GPS second, and then we can simply use the telemetry messages from the receiver or the counter from the time tagging module to put together the GPS second\footnote{There is some difficulty in finding the number of leap seconds to date, but this can be requested from the receiver periodically.}. With these pieces of information, we can put together a full decimal time-tag of when an event occurs, allowing reconstruction of air showers and comparison with data from other experiments.
 
-To get the highest possible accuracy in time tagging, we will need to apply the clock granularity message. This has two effects on \autoref{insec}: first, the clock granularity messages (\autoref{sawtooth}) from the proceeding and current PPS events give the information that we need to adjust how many seconds the number of calibration counts, $N_{cal}=N_{i+1,PPS}-N_{i,PPS}$, represents. The preceding sawtooth message then tells us how the end of second represented by the PPS needs to be shifted relative to GPS time to be correctly aligned.
+To get the highest possible accuracy in time tagging, we also need to apply the clock granularity message. This has two effects on \autoref{insec}: first, the clock granularity messages (\autoref{sawtooth}) from the proceeding and current PPS events give the information that we need to adjust how many seconds the number of calibration counts, $N_{cal}=N_{i+1,PPS}-N_{i,PPS}$, represents. The preceding sawtooth message then tells us how the end of second represented by the PPS needs to be shifted relative to GPS time to be correctly aligned.
 
 We address the first problem by applying a correction to $N_{cal}$:
-$$N_{cal}'=\left(N_{i+1,PPS}-N_{i,PPS}\right)\left(1+10^{-9}(\Delta t_{curr}-\Delta t_{last})\right),$$
+$$N_{cal}'=\left(N_{i+1,PPS}-N_{i,PPS}\right)\Big(1+10^{-9}(\Delta t_{curr}-\Delta t_{last})\Big),$$
 where the $\Delta t_i$ correspond to the preceding and current saw tooth ($last$ and $curr$, respectively) in nanoseconds, as it is delivered by the receiver. The second problem is fixed by simply adding the preceding sawtooth ($\Delta t_{last}$) to the event time. This gives us a new $t_e'$ of:
 \begeq{
   \label{insec2}
-  t_e'=\frac{N_e}{\left(N_{i+1,PPS}-N_{i,PPS}\right)\left(1+10^{-9}(\Delta t_{curr}-\Delta t_{last})\right)}*10^9+\Delta t_{last}.
+  t_e'=\frac{N_e}{\left(N_{i+1,PPS}-N_{i,PPS}\right)\Big(1+10^{-9}(\Delta t_{curr}-\Delta t_{last})\Big)}*10^9+\Delta t_{last}.
 }
-In this formulation, we have added the factor of $10^9$ to put $t_e'$ into units of nanoseconds, which is the usual convention for the type of timing accuracy measurements we will be doing in this work. This is in line with the framework set forth by the original group who worked on GPS verification for the initial Auger construction (documented in \textcite{firsttag}).
+In this formulation, we have added the factor of $10^9$ to put $t_e'$ into units of nanoseconds, which is the usual convention for the type of timing accuracy measurements we will be doing in this work. This is in line with the framework set forth by the original group who worked on GPS verification for the initial Auger construction (documented in \bigcite{firsttag}). This concludes the introduction to time-tagging relevant for this chapter however, the discussion on timing standards and accuracy is continued in \autoref{stabacc}.
 
-For final science purposes, we usually want to give event times in number of GPS seconds, including the lengthy portion of the event time which will come after the decimal. While none of the measurements and activity documented in this chapter made use of it, a good place for help determining the number of leap seconds, and incidentally the conversion between UTC and GPS time, is the LIGO webpage on the topic, \url{https://www.gw-openscience.org/gps/}. The discussion on timing standards and accuracy is continued in \autoref{stabacc}.
+%For final science purposes, we usually want to give event times in number of GPS seconds, including the lengthy portion of the event time which will come after the decimal. While none of the measurements and activity documented in this chapter made use of it, a good place for help determining the number of leap seconds, and incidentally the conversion between UTC and GPS time, is the LIGO webpage on the topic, \url{https://www.gw-openscience.org/gps/}. The discussion on timing standards and accuracy is continued in \autoref{stabacc}.
 \section{GPS Receiver Selection Testing} %edit this section carefully, try to eliminate unnecessary references since the specsheet is somehow not publicly available. Or you can just make it available...
 \label{gpstest}
-In order to operate an observatory like Auger, precise timing synchronization is needed amongst the SD stations. This is accomplished via GPS timing boards. While the original receiver for the AugerPrime upgrade, the i-Lotus M12M \cite{m12mspec}, was initially chosen before the author began working with the Auger Collaboration, the manufacturer was unable to meet the volume of our request when the time came to deliver. Accordingly, we had to test a new GPS unit, the Synergy SSR-6Tf. During testing, the manufacturer came back and informed us that they had found the needed parts. At this time we had made significant progress towards vetting the new receiver. 
+As mentioned above, Auger requires precise timing synchronization amongst the SD stations. This is accomplished via GPS timing boards, which are available from the manufacturer as OEM products. Several manufacturers offerings were considered, and based on work completed at CWRU in the early 2010's, the i-Lotus M12M \cite{m12mspec} was initially chosen (before the author began working with the Auger Collaboration). Unfortunately, when pressed for a quotation and delivery schedule in 2017, i-Lotus was unable to meet the volume of our request. Accordingly, we required a new GPS unit. We ultimately selected the Synergy SSR-6Tf after the testing described in this section. %During testing, the manufacturer came back and informed us that they had found the needed parts. At this time we had made significant progress towards vetting the new receiver. 
 
-For this section, we will first discuss the availability situation as mentioned above in detail. We then move on to a brief discussion of the two models of receivers. After this, the first test, for absolute timing, is outlined and then results are shown. We then discuss the method for the relative timing and temperate dependence tests, and show their results. Finally, we make the recommendation to purchase the SSR-6Tf and justify it from the data and context.
+For this section, we will first briefly discuss of the two models of receivers. After this, the first test, measuring absolute timing, is outlined and then results are shown. We then discuss the method for the relative timing and temperate dependence tests, and show their results. Finally, we describe our recommendation to purchase the SSR-6Tf and justify it from the data and context.
 
-\subsection{Concerns regarding the availability of the i-Lotus M12M}
-i-Lotus is a company in Singapore that received technology from
-Motorola who no longer manufactures GPS receivers (theirs were the units used for the UB). The i-Lotus
-M12M~\cite{m12mspec} has been long anticipated as the selected GPS receiver for
-the UUB. Currently, all but two UUBs within the Engineering Array
-are operating with i-Lotus M12M GPS receivers.
-
-In late 2018, a purchase order was placed to obtain all M12Ms required
-for the Auger upgrade.  The order was placed via Synergy Systems
-LLC, the licensed reseller for i-Lotus in the US. The
-hope and expectation was that i-Lotus would accept the order and
-deliver the required M12M units to CWRU where our group would begin to validate and
-calibrate the units for eventual deployment into the upgraded
-array.
-
-However, after the purchase order was placed, we were informed that
-i-Lotus would have substantial delays of at least several months in
-responding to our order due to an unavailability of component parts.
-By late 2017, our options were (1) to wait at least several months
-with the expectation that the parts shortage might improve, or (2) to
-consider an alternative to the i-Lotus M12M called the Synergy SSR-6Tf~\cite{ssr}.
-
-Since this time, we have been working with representatives from
-Synergy Systems to consider our options and to explore and validate
-the performance of the SSR-6Tf as a possible alternative to the M12M.
-During the intervening months, while testing the SSR-6Tf, we
-received updates that indicate that i-Lotus may now have components to
-fill some or potentially all of our order for the M12Ms.  At this time, the group at
-CWRU has completed bench tests and temperature dependence tests to
-compare the performance and reliability of the M12M and the SSR-6Tf. Additionally, two SSR-6Tfs are installed in the field (in Trak Jr. and Clais Jr.) and have been operating for over 6 months without issue.
+%\subsection{Concerns regarding the availability of the i-Lotus M12M}
+%i-Lotus is a company in Singapore that received technology from
+%Motorola who no longer manufactures GPS receivers (theirs were the units used for the UB). The i-Lotus
+%M12M~\cite{m12mspec} has been long anticipated as the selected GPS receiver for
+%the UUB. Currently, all but two UUBs within the Engineering Array
+%are operating with i-Lotus M12M GPS receivers.
+%
+%In late 2018, a purchase order was placed to obtain all M12Ms required
+%for the Auger upgrade.  The order was placed via Synergy Systems
+%LLC, the licensed reseller for i-Lotus in the US. The
+%hope and expectation was that i-Lotus would accept the order and
+%deliver the required M12M units to CWRU where our group would begin to validate and
+%calibrate the units for eventual deployment into the upgraded
+%array.
+%
+%However, after the purchase order was placed, we were informed that
+%i-Lotus would have substantial delays of at least several months in
+%responding to our order due to an unavailability of component parts.
+%By late 2017, our options were (1) to wait at least several months
+%with the expectation that the parts shortage might improve, or (2) to
+%consider an alternative to the i-Lotus M12M called the Synergy SSR-6Tf~\cite{ssr}.
+%
+%Since this time, we have been working with representatives from
+%Synergy Systems to consider our options and to explore and validate
+%the performance of the SSR-6Tf as a possible alternative to the M12M.
+%During the intervening months, while testing the SSR-6Tf, we
+%received updates that indicate that i-Lotus may now have components to
+%fill some or potentially all of our order for the M12Ms.  At this time, the group at
+%CWRU has completed bench tests and temperature dependence tests to
+%compare the performance and reliability of the M12M and the SSR-6Tf. Additionally, two SSR-6Tfs are installed in the field (in Trak Jr. and Clais Jr.) and have been operating for over 6 months without issue.
 %Here we present our results and our recommendations.
 
 \subsection{Specifications:  i-Lotus M12M vs. the SSR-6Tf}%might want to add something about the UT+ here
@@ -205,9 +206,9 @@ temperature dependence measurements conducted and reported by the
 CWRU group~\cite{brandt}. For relative GPS time-tagging we select two GPS
 receivers of the same model and then measure the relative arrivals of their sawtooth-corrected 1PPSs. These measurements provide a series of time differences from which timing precision (standard deviation) can be computed over long-duration tests.
 
-From previous results using a 250~MHz version of this system, the
-results of the temperature and relative timing tests are available in
-the linked document and will be cited below. 
+%From previous results using a 250~MHz version of this system, the
+%results of the temperature and relative timing tests are available in
+%the linked document and will be cited below. 
 
 
 \subsubsection{Temperature and Relative Timing Test} %check july collaboration report for more testing on the M12M
@@ -218,24 +219,23 @@ the linked document and will be cited below.
 \includegraphics[width=2.9 in]{./images/ssr_const_temp_fit.pdf}
 \includegraphics[width=2.9 in]{./images/m12m_first_week.pdf}
 \caption[SSR-6Tf Relative Timing]{Left: the relative timing test for the SSR-6Tf. Right: the relative timing test for the M12M. These are the time differences of the sawtooth corrected }
-\label{ssrtest0}
+\label{relativetimes}
 \end{figure}
 In comparison to the $\sim$1.45ns standard deviation in the time differences of the
 M12Ms, the SSR has a standard deviation of 1.3 ns, which is the
 instrumental uncertainty of the 750 Mhz time-tagging system used for
 this testing \cite{brandt}. It is worth noting that it's possible the
-SSR-6Tf has an even better timing accuracy, but it has reached the
-ability of our test bench to time-tag it. To reiterate, these time differences represent two identical receivers timed against each other with the TIM unit (\autoref{tim}). The data have been filtered
+SSR-6Tf may have an even better timing accuracy, but this result reaches the limits of our test stands ability to time-tag it. To reiterate, these time differences represent two identical receivers timed against each other with the TIM unit (\autoref{tim}). The data have been filtered
 for counter rollover and sawtooth rollover outliers which account for
 less that 1\% of the second by second time differences recorded. These measured timing precisions are in line with the manufacturer's presented figures \cite{ssr,m12mspec}.
 
 For the temperature dependence testing, the profile of temperatures is
 derived from a study of the weather at the Auger site \cite{brandt}. The M12M shows
 some temperature dependence during extreme temperature ramps, but the
-mean of its 1PPS arrival time does not depend on temperature, whereas
-SSR-6Tf does show direct dependence on the temperature. In spite of
+mean of its 1PPS arrival time does not depend on temperature, In contrast, the
+SSR-6Tf does show a small direct dependence on the temperature. In spite of
 this, the performance of the SSR is still better than that of the M12M
-when put under thermal stress.
+when put under thermal variations.
 
 % \figindos{Left: A time series test of the SSR-6Tf's performance with sawtooth
 %   correction measured against another sawtooth corrected SSR-6Tf. The
@@ -326,11 +326,8 @@ cause issues, but even with this direct dependence the SSR is more
 accurate than the M12M.
 
 All things considered, the SSR-6Tf is a newer receiver which
-outperforms the M12M in all relevant parameters. Pending testing in
-the field over the next few weeks, our recommendation for the Auger
-Prime upgrade is to purchase the SSR-6Tf receivers when Synergy is
+outperforms the M12M in all relevant parameters. Both receivers have now been tested in the field for \textgreater 3 months without fault, and so our recommendation for the AugerPrime upgrade is to purchase the SSR-6Tf receivers when Synergy is
 ready to deliver their final version.
-
 
 \section{AugerPrime Time-Resolution} %tres1 is the original time resolution reference
 \label{money}%add tres1 to bibtex
@@ -347,6 +344,7 @@ The timing tests will be performed in the stations Trak Jr., Clais Jr. and Peter
 \end{figure}
 
 \subsection{Time-Tagging Specifications and Ports} %check and decide how much of this stuff you want in here, including the tables
+\label{ttagspec}
 In comparison to the time-tagging module for TIM, shown in \autoref{ttagdiag}, the final time-tagging module for AugerPrime integrates all of the GPIO connections into internal wires and registers and makes some of the calculations that are done in post-processing for TIM. This change is a result of the SDEU meeting held at Michigan Technological University in October of 2014, where a new specification for the system was written, eschewing the individual GPIO connections for a more efficient structure of internal connections and a single AXI connection to communicate with the PS. Through this connection, Direct Memory Addressing (DMA) is done to present the module's outputs directly into the memory of the processing system. This puts the burden of transferring data on the PL which will handle it constantly and without extra overhead. The PS then has direct access to this information when forming T3 packets and taking care of housekeeping tasks.
 
 \figwrap{Here we have the block diagram for the time-tagging module in the UUB. This shows the connections to the AXI bus and the external connections to other PL or UUB locations.}{./images/ttagbd.pdf}{2 in}{l}{Time-Tagging Module IP Element}{ttagbd}
@@ -398,28 +396,30 @@ spare&15&write and read any value \\
 \label{ttagspec}
 \end{table}
 
-\subsection{Coincident Showers Method}
-When Auger was initially commissioned, the timing resolution of the stations was determined via a `coincident showers' method. This method was not detailed in any publication, but its results are briefly discussed in \textcite{fddiam}. The basic method that they use is to calculate a Gaussian uncertainty quantifying the delay between stations from the arrival directions of low energy showers (the \textit{physical dispersion} as it is sometimes referred to). They then take the coincident time-tags within a physically reasonable window, find their width by fitting a Gaussian to it, and then they subtract off the error from the arrival directions in quadrature. 
+It is worth noting that for the UUB we have implemented a fundamentally different timing design scheme than the original Unified Board. In the UB, the time tagging board was external to the entire system (i.e. within an expansion header) and ran at 100Mhz, while the ADCs ran at 40Mhz; in the UUB, time tagging and trace recording are synchronized to the same clock, both out of convenience and to reduce redundant components in the board for power concerns. In early versions of the UUB, the 120Mhz clock was to be filtered through a jitter reduction chip. Ultimately, it was decided by the timing team (the author included), initially led by Patrick Allison of OSU, that the small fractions-of-a-picosecond reduction in the frame jitter of the ADCs would not affect any science goals (note, this would affect the recorded shape and smoothness of the shower front, but not at a significant level). The jitter reduction chip was rather power hungry, and its removal left us with a slightly easier power budget.
 
-We will use this same method to analyze coincident time-tags between Trak Jr. and Peteroa Jr. In general, we pick a month's worth of data. We cut out time-tags outside of 150ns difference; this range allows us to ensure that there are not a large amount of unphysical outliers in the coincident showers. After this, we fit a Gaussian to the distribution and take its standard deviation as the uncorrected time resolution, $\sigma_{tot}$. We will evaluate the time differences according to the formula shown in \autoref{insec2}.
+\subsection{Coincident Showers Method}
+When Auger was initially commissioned, the timing resolution of the stations was determined via a `coincident showers' method. This method was not detailed in any publication, but its results are briefly discussed in A. Aab et\textcite{fddiam}. The basic method that used is to calculate a Gaussian uncertainty quantifying the delay between stations from the arrival directions of low energy showers (the \textit{physical dispersion} as it is sometimes referred to). Coincident time-tags within a physically reasonable window, are collected and the width of their distribution is found by fitting a Gaussian, and then subtracting off the error from the arrival directions in quadrature. 
+
+Here we use this same method to analyze coincident time-tags between Trak Jr. and Peteroa Jr. In general, we pick a month's worth of data. We cut events with time-tags outside of 150ns difference; this range allows us to ensure that there are not a large amount of unphysical outliers in the coincident showers. After this, we fit a Gaussian to the distribution and take its standard deviation as the uncorrected time resolution, $\sigma_{tot}$. We then evaluate the time differences according to the formula shown in \autoref{insec2}.
 
 To form the uncertainty from the time delay between stations, we can take the commonly found derivation of the distance from a point to a plane and use it to calculate the distance the shower plane must travel after it has hit one station to be seen by the other station. We can use spherical coordinates to describe the arrival direction of the shower and load this data directly from Auger's \textit{Herald} data product. The distance the plane must travel as a function of local zenith angle $\theta$ and azimuth $\phi$ is:
 \begeq{
 \label{tdelay}
 d \sin\theta \sin\phi ,
 }
-where $d$ is the separation between the stations we are testing. To be clear, $\theta$ is defined to be the zenith angle, i.e. 0 if the shower hits perpendicular to the atmosphere. With this established, we feed $\theta$ and $\phi$ values into \autoref{tdelay}, make a histogram of the delays and then measure its width by fitting a Gaussian to it. This distribution will be referred to as the `distance-to-detector` histogram. We then divide the fitted width by $c$ and put the resulting time delay in units of nanoseconds. To find the final time-resolution, consider the following statement of the total timing error:
+where $d$ is the separation between the stations we are testing. To be clear, $\theta$ is defined to be the zenith angle, i.e. 0 if the shower travels perpendicular to the atmosphere. With this established, we feed $\theta$ and $\phi$ values into \autoref{tdelay}, make a histogram of the delays and then measure its width by fitting a Gaussian to it. This distribution will be referred to as the `distance-to-detector` histogram. We then divide the fitted width by $c$ and put the resulting time delay in units of nanoseconds. To find the final time-resolution, consider the following statement of the total timing error:
 $$
 \sigma_{tot}=\sqrt{\sigma_{shower}^2+\sigma_{det1}^2+\sigma_{det2}^2}=\sqrt{\sigma_{shower}^2+2\sigma_{det}^2}\implies\sigma_{det}=\sqrt{\frac{\sigma_{tot}^2-\sigma_{shower}^2}{2}}.
 $$
 We assume only that the detectors involved in the timing analysis will have the same timing errors (they are identical). Care has been taken by the Observatory's on-site scientists to ensure the firmware version is the same between the testing stations. At this point we have everything we need to calculate the time resolution using coincident showers.
 \subsubsection{Shower Selection for Arrival Directions}
 \label{justify}
-Ab initio, it may be advantageous for us to make some energy cuts on the showers we use to assess the error due to shower arrival directions. We make this statement here for clarity and transparency: any selection of events gives approximately the same calculated standard deviation of the distribution of time delays due to arrival directions. The directly calculated standard deviation for the selections of data corresponding to \textless 1 EeV, 1 EeV \textless $E$ \textless 20 EeV, 20 EeV \textless $E$ \textless 40 EeV and  \textgreater 40 EeV all give standard deviations with .1 ns of 18.25 ns (18.28 $\pm$ .08 ns as a measurement).  Cuts for low energy events give non-Gaussian distributions, with a high center peak and heavy tails on either end. Attempts to fit a Gaussian to these fail without excessive data massaging or additional degrees of freedom in the fit. Only the highest energy bin from above has a convergent fit. 
+Ab initio, it may be advantageous for us to make some energy cuts on the showers we use to assess the error due to shower arrival directions. We make this statement here for clarity and transparency: any selection of events gives approximately the same calculated standard deviation of the distribution of time delays due to arrival directions. The directly calculated standard deviation for the selections of data corresponding to \textless 1 EeV, 1 EeV \textless $E$ \textless 20 EeV, 20 EeV \textless $E$ \textless 40 EeV and  \textgreater 40 EeV all give standard deviations within 0.1 ns of 18.25 ns (18.28 $\pm$ .08 ns as a measurement).  Cuts for low energy events give non-Gaussian distributions, with a high center peak and heavy tails on either end. Attempts to fit a Gaussian to these fail without excessive data massaging or additional degrees of freedom in the fit. Only the highest energy bin from above has a convergent fit. 
 
 Looking at this, we will proceed to use the fitted standard deviation for the highest energy bin, making the assumption that this is sufficient. There is some physical motivation to do this since high energy showers will be guaranteed to trigger both detectors if they are within a suitable distance, while even very close low energy showers may not cause a co-trigger. If we find that using this assumption delivers unphysical or disagreeing results with the synchronization cable method, we can revisit this assumption and look at methods of handling non-Gaussian noise. 
 \subsection{Coincident Showers Results}
-Proceeding as outlined above, we find the distribution of distances-to-detector to be 5.4 $\pm$ 1.1 m (error from fitting) with an adjusted $r^2$ of .98, indicating an acceptable but not great fit. From this, we get a standard deviation of the time delays of 18.1 $\pm$ 3.5 ns. The distribution and fit are shown in \autoref{arrdist}.
+Proceeding as outlined above, we find the distribution of distances-to-detector to be 5.4 $\pm$ 1.1 m (error from fitting) with an adjusted $r^2$ of .98, indicating an acceptable but not excellent fit. From this, we get a standard deviation of the time delays of 18.1 $\pm$ 3.5 ns. The distribution and fit are shown in \autoref{arrdist}.
 \begin{figure}[H]
 \centering
 \includegraphics[width=4.5 in]{./images/arrdist.pdf}
@@ -438,6 +438,7 @@ We can pick either month, their standard deviations are within uncertainties of 
 \begeq{
 \sigma_{det}=\sqrt{\frac{21.97^2-18.08^2}{2}}=8.8\,\pm\,3.6 \mbox{ ns}.
 }
+This value is well in line with the performance expectations for the integrated GPS Timing and Time-Tagging system, indicating that all of the components will operate in synchrony when deployed in the field.
 \subsection{Synchronization Cable Method}%might want to check when UUBv2 was actually installed
 Another way to measure the timing of the closely placed EA stations is to connect a cable to the trigger output of one station and bring it into one of the ADC channels of the other. This connection was made between Trak Jr. and Clais Jr. and stayed in place from early 2018 until August of that year, when the second version of the UUB was installed. The UUBv2 is currently being debugged and will soon be operational. 
 
@@ -453,7 +454,7 @@ By timing the trigger in Clais Jr. and differencing it with the arrival time of 
 %def sqrerfit(x,x1,x2,a,y0):
 %    return a/2*(spec.erf(x-x1)-spec.erf(x-x2))+y0
 \begeq{
-  f(x)=\frac{a}{2}\left(erf(x-x_1)-erf(x-x_2)\right)+y_0,
+  f(x)=\frac{a}{2}\Big(erf(x-x_1)-erf(x-x_2)\Big)+y_0,
 }
 where $x_1$ is the center of the rising edge, $x_2$ is the center of the falling edge, $a$ is the maximum of the pulse over the noise floor, and $y_0$ is the noise floor. A sample fitting is shown in \autoref{pulseshapes}. We enforce $x_1<x_2$ and use suitable automatically calculated initial values for our fitting. This fitting converges on almost all pulses it has been applied to. A sample collection of ADC recordings are shown in \autoref{tracepanel}.
 
@@ -495,7 +496,7 @@ In this section we discussed two different methods of getting the time resolutio
 
 After this method, we discussed the `synchronization cable' method, in which we time the arrival of a pulse from one station to the other. Since we need to calculate GPS time stamps at both stations, as well as track the arrival time using an ADC, this method provides a true end-to-end test of the timing resolution. Following this route, we arrive at a time resolution of $\sigma_{det}=8.44\pm\,.15\mbox{ ns}$.
 
-Given the large uncertainty induced from the calculation of the physical dispersion due to directionality of the arriving showers, we find that the `synchronization cable' method is a better measurement of the time resolution. We therefore accept $\sigma_{det}=8.44\pm\,.15\mbox{ ns}$ as our final measurement, although the measurement using the `coincident showers' method is in good agreement with this result.
+Given the large uncertainty induced from the calculation of the physical dispersion due to directionality of the arriving showers, we find that the `synchronization cable' method is a better measurement of the time resolution. We therefore accept $\sigma_{det}=8.44\pm\,.15\mbox{ ns}$ as our final measurement, noting that the measurement using the `coincident showers' method is in good agreement with this result. We also note that this meets the performance specifications for the UUB's Time-Tagging and GPS Timing synchronization requirements, and therefore all aspects of the time-tagging system on the UUB are working correctly.
 
 
 

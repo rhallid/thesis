@@ -1,0 +1,30 @@
+\chapter{Trigger Catalog}\label{triggerapp}
+\noindent\textbf{Compatibility Triggers:}
+\begin{enumerate}
+\item \textbf{Compatibility Single Bin Trigger}: in parity with the triggers on the UB, this trigger operates on the downsampled ADC traces, and simply asks ``have we seen a bin greater than the set threshold?" It can be programmed with different thresholds for each PMT, and can be programmed for different coincidence multiplicity requirements via a control register. From a science perspective, this is to detect the strong signal from single through going muons and is especially effective at detecting highly inclined showers where the atmosphere has depleted the EM component of the shower.
+
+\item \textbf{Compatibility Time-Over-Threshold Trigger}: originally intended to decrease the data rate of stations by ensuring they only trigger on real showers, the TOT trigger applies a threshold to each ADC bin in a running 120 bin window. When a particular multiplicity, set in the control register, of consecutive bins are above threshold, it trips the TOT trigger, which is then elevated to a T2 event (i.e. sent to the Central Data Acquisition System, CDAS). 
+\end{enumerate}
+
+\noindent\noindent\textbf{Current Triggers:}
+\begin{enumerate}
+\item \textbf{Time-Over-Threshold, Deconvolved}: the TOTd trigger is the advanced form of the TOT trigger, employing an exponential deconvolution, which effectively amplifies the signal towards the end of a shower trace. By doing so, we can get a more accurate count of the number of bins which correspond to usable shower data, and therefore the multiplicity that we specify in the control register will more accurately reflect the length of the shower.  Besides the deconvolution, it works in effectively the same way as the shower.
+\item \textbf{Multiplicity-of-Positive-Steps}: the MoPS trigger looks for the signal in a trace to rise after each bin. Each time it rises, that number of steps is added together to form the multiplicity, and if the the trace multiplicity hits the multiplicity number set in the control register, it launches a trigger. 
+\item \textbf{Full Bandwidth Single Bin Trigger}: This is truly the same as the old compatibility single bin trigger, but at the full 120Mhz clock rate.
+\end{enumerate}
+
+\noindent\textbf{Muon Trigger}: this trigger allows the stations to trigger on uncorrelated fluxes of through going muons for calibration. In particular, it has programmable delays for comparing the signal of the SSD and WCD for MIP vs. VEM curves. 
+
+\section{Trigger Hierarchy}
+\label{triggerarchy}
+To efficiently balance the data constraints of an array as large as Auger, a hierarchy of triggers must be established \cite{ubtriggers}. At time of writing, the new triggers of the UUB have not been implemented in this hierarchy. That said, we can elucidate how the old triggers contribute. As mentioned above, the two previously implemented triggers are the TOT and the Single Bin triggers. The Single Bin (SB) trigger is meant for the short but high pulses from single through going muons, while the TOT trigger is meant for showers. The TOT trigger represents a more significant signal that will always be associated with some type of shower, whereas the SB trigger can come from showers or uncorrelated fluxes, and is therefore less trustworthy.
+
+\begin{figure}[h!]
+\begin{center}
+\includegraphics[width=5.6 in]{./images/trighier.png}
+\caption[Auger Trigger Hierarchy]{A diagram out of Abraham et al. \cite{ubtriggers}. This shows what triggers and what signal strengths lead to what rates. It also shows when events are elevated. At the CDAS level, the letters, numbers and ``\&" signs represent the geometric configuration required to invoke a T3 trigger, where $C_n$ is a detector from the $n$th circle out from the estimated shower core. See \cite{ubtriggers} for more information.}
+\label{trighier}
+\end{center}
+\end{figure}
+
+There are three levels of triggers in the SD array: T1, T2 and T3. T1 and T2 live in the station, where T1 can be either noise or a shower, but T2 is meant to represent events that are shower candidates. T1 rates are used for calibration, and do not necessarily require a coincidence amongst all three photomultiplier tubes, while T2s represent either passing a TOT trigger or passing a very high Single Bin trigger. T2s are sent to the Central Data Acquisition System (CDAS) over radio and CDAS makes a decision to elevate to T3 based on the adjacency of stations it is receiving T2s from and the time window in which it receives them. If appropriate conditions are met (represented in \autoref{trighier}), CDAS sends out a T3 ``request" and relevant stations are read out, and their trace data, along with housekeeping and calibration data, are stored.
