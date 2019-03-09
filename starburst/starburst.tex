@@ -73,7 +73,7 @@ The statistical test we will perform is a $\chi^2$-like test, where we evaluate 
 }
 where the numerator is the square of the mean of the PDF evaluations for a given sky and the denominator is the squared mean of the mean PDF evaluations for isotropic skies. The p-value of this test will be the number of skies with a greater $\chi^2$-like statistic than the real Starburst sky. Lastly, we convert this p-value to a Gaussian equivalent significance (sometimes referred to as 1-sided Gaussian significance). 
 
-For the input data, we use Auger's \textit{Herald} data product of the highest energy cosmic rays, with the recommended quality cuts, and the \textgreater 40 EeV cut made in parity with \bigcite{starburst}. Outside of a 60\degree zenith cut, these cuts are all based on performance parameters of Auger. For the real sky catalog of SBGs, we use those taken directly from \textcite{starburst}; this is the catalog of all known SBGs within 250 Mpc with available microwave emission data. 
+For the input data, we use Auger's \textit{Herald} data product of the highest energy cosmic rays, with the recommended quality cuts, and the \textgreater 40 EeV cut made in parity with \bigcite{starburst}. Outside of a 60\degree zenith cut, these cuts are all based on performance parameters of Auger. For the real sky catalog of SBGs, we use those taken directly from \textcite{starburst}; this is the catalog of all known SBGs within 250 Mpc with available microwave emission data. We then constrain our test to include only SBGs within Auger's acceptance. There are 23 total SBGs, and 11 which we will consider in our calculations. When isotropic SBG skies are generated, care is taken to ensure that an equal number of points are considered, i.e. 11 within the acceptance.
 %\begin{figure}[h!]
 %\centering
 %
@@ -90,25 +90,25 @@ For the input data, we use Auger's \textit{Herald} data product of the highest e
 \caption[CR Sky + JFQ17 Modulation]{In this sky map, we have summed the PDFs of all CRs and shown them as a sky map on a Mollweide projection.}
 \label{crsky}
 \end{figure}
-In total, we simulated 486 events from the catalog of 710 events which passed the \textit{Herald} cuts. We plot the distribution of the $\chi^2$-like statistic below in \autoref{chi2}, along with the CR and Starburst skies juxtaposed. We also show a blown-up CR+JFQ17 sky in \autoref{crsky}, which implicitly shows Auger's acceptance, giving a final coordinate sanity check. Proceeding as described in \autoref{stest}, we find a p-value of .17, corresponding to a Gaussian equivalent significance of 1.88$\sigma$. 
+In total, we simulated 486 events from the catalog of 710 events which passed the \textit{Herald} cuts. We plot the distribution of the $\chi^2$-like statistic below in \autoref{chi2}, along with the CR and Starburst skies juxtaposed. We also show a blown-up CR+JFQ17 sky in \autoref{crsky}, which implicitly shows Auger's acceptance, giving a final coordinate sanity check. Proceeding as described in \autoref{stest}, we find a p-value of .3, corresponding to a Gaussian equivalent significance of 1.6$\sigma$. 
 \begin{figure}[H]
 \centering
-\includegraphics[width=5.9 in]{./images/crcorr_final.png}
-\includegraphics[width=5.9 in]{./images/chi2.pdf}
-\caption[Starburst Correlation Test]{Top: a sky map of the CR+JFQ17 sky with Starburst Galaxies placed as purple stars on it. Bottom: a plot of our $\chi^2$-like distribution, with the statistic for the real Starburst Sky marked in orange. The values of the statistic come from \autoref{chi2like}.}
+\includegraphics[width=5.5 in]{./images/crcorr_final.png}
+\includegraphics[width=5.5 in]{./images/chi2.pdf}
+\caption[Starburst Correlation Test]{Top: a Mollweide projection sky map of the CR+JFQ17 sky with Starburst Galaxies in Auger's acceptance placed as purple stars on it, and those outside of Auger's acceptance denoted in red. The acceptance line is shown in green. Bottom: a plot of our $\chi^2$-like distribution, with the statistic for the real Starburst Sky marked in orange. The values of the statistic come from \autoref{chi2like}.}
 \label{chi2}
 \end{figure}
 
 As an additional byproduct of our analysis, we have the angular deflections plotted in \autoref{dthetas}. The average deflection of our sample is 5.2\degree $\pm$ 3.3\degree. 
 \begin{figure}[H]
 \centering
-\includegraphics[width=3.0 in]{./images/dthetas.pdf}
+\includegraphics[width=4.5 in]{./images/dthetas.pdf}
 \caption[Angular Direction Change]{The deflection in arrival direction from the centroid of the PDF for the cosmic rays tested.}
 \label{dthetas}
 \end{figure}
 
 \section{Conclusions}
-Looking at the results in the previous section, we see that to a moderate significance, our results suggest and support the conclusion that UHECR arrival directions are correlated with Starburst Galaxies. This correlation is not definitive at the $\sim$2$\sigma$ level, but does not contradict the result of \bigcite{starburst}. We find that the average angular deflection is 5.2\degree $\pm$ 3.3\degree, with a maximum of 18\degree; these deflection are in agreement with the aforementioned Starburst results which showed a 13\degree  (+4\degree/-3\degree) optimal distribution width for the source SBGs. 
+Looking at the results in the previous section, we see that to a moderate significance, our results suggest and support the conclusion that UHECR arrival directions are correlated with Starburst Galaxies. This correlation is not strong at the1.6$\sigma$ level, but does not contradict the result of \bigcite{starburst}. We find that the average angular deflection is 5.2\degree $\pm$ 3.3\degree, with a maximum of 18\degree; these deflection are in agreement with the aforementioned Starburst results which showed a 13\degree  (+4\degree/-3\degree) optimal distribution width for the source SBGs. 
 
 At this time, however, our result is not directly comparable to that in \textcite{starburst} since we have effectively asked the question ``how significant is the entire CR population's correlation with SBGs having invoked a magnetic field model?" while \bigcite{starburst} provides that a relatively small portion of the CRs come from SBGs, with the rest to come from an otherwise isotropic sky. Work towards making these results directly comparable will be discussed in the coming subsection.
 \subsection{Future Directions}
